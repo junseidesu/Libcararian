@@ -47,7 +47,7 @@ function pdfPreview(){
 pdfPreview();
 
 
-function dialog(){
+function setupDialog(){
     const openButton = document.getElementById('openButton');
     const closeButton = document.getElementById('closeButton');
     const myDialog = document.getElementById('myDialog');
@@ -63,7 +63,7 @@ function dialog(){
     });
 }
 
-dialog();
+setupDialog();
 
 function setupRangeButtons() {
     const gapArea=document.getElementById('gapArea');
