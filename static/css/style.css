@@ -1,0 +1,153 @@
+/* Universal Styles */
+* {
+    margin: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f1f1f1;
+    min-height: 95vh;
+}
+
+/* Heading Styles */
+h1 {
+    text-align: center;
+    color: #000000;
+    margin: 30px;
+    font-size: 2.5rem;
+}
+
+ul{
+    text-align:left;
+    white-space: nowrap;
+}
+
+li:hover{
+    background-color: #dadada;
+}
+
+input[type="number"]{
+    max-width:50px;
+}
+
+/* Container Styles */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    gap: 10px;
+    height: 90vh;
+}
+
+/* Container Item Styles */
+.container-item {
+    padding: 10px;
+    text-align: center;
+    background-color: #ffffff;
+    border-radius: 8px;
+    height: 90%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Panel Specific Flex Grow */
+#file-panel {
+    flex: 2;
+    max-width: 400px;
+}
+
+#preview-panel {
+    flex: 3;
+}
+
+#operation-panel {
+    flex: 2;
+}
+
+/* Upload Area Styles */
+.upload-area {
+    padding: 20px;
+    width: 90%;
+    border: 3px dashed #ff7300;
+    border-radius: 8px;
+    margin: 10px auto;
+    transition:transform 0.3s ease-out;
+}
+
+.upload-area:hover{
+    transform: translateY(-5px);
+}
+
+/* File List Styles */
+.file-list {
+    flex-grow: 1;
+    width: 90%;
+    border: 2px solid #ff7300;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 0 auto;
+    overflow-x: auto;
+}
+
+/* List Operation Styles */
+#list-operation {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.operation-options{
+    position:relative;
+    width:90%;
+    margin-bottom:40px;
+    border:2px solid #ff7300;
+    border-radius: 8px;
+    margin:10px auto;
+    padding:10px;
+}
+
+.frame-title{
+    position:absolute;
+    top:-15px;
+    left:15px;
+    padding:0 10px;
+    background-color: #ffffff;
+    font-weight: bold;
+}
+
+
+#preview-canvas{
+    max-height:90%;
+    max-width:90%;
+    margin:auto auto;
+}
+
+dialog {
+    padding: 20px;
+    margin:auto;
+    border-radius: 8px;
+    border:transparent;
+    width: 600px;
+}
+/* dialogが表示された時の背景を暗くする */
+dialog::backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#gapArea{
+    padding:20px;
+    border: 2px solid #ff7300;
+    border-radius: 8px;
+}
+
+.prefix-panel{
+    margin-bottom:10px;
+}
+
+.range-panel{
+    margin:5px;
+}

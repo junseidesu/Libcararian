@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF管理・結合・分割ツール</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background:  #ffffff ;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: rgb(0, 0, 0);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr;
+            gap: 30px;
+            height: calc(100vh - 150px);
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .main-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+            transform: translateY(-2px);
+        }
+
+        .upload-area.dragover {
+            border-color: #28a745;
+            background: rgba(40, 167, 69, 0.1);
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        .upload-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .file-list {
+            margin-bottom: 20px;
+        }
+
+        .file-item {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .file-item:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+
+        .file-item.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .file-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .file-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .file-actions {
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn.danger {
+            background: #dc3545;
+        }
+
+        .btn.danger:hover {
+            background: #c82333;
+        }
+
+        .controls {
+            margin-bottom: 20px;
+        }
+
+        .control-group {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .control-group h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 5px;
+        }
+
+        .checkbox-group {
+            margin: 10px 0;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            margin-right: 8px;
+            transform: scale(1.2);
+        }
+
+        .input-group {
+            margin: 10px 0;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .action-btn.split {
+            background: linear-gradient(45deg, #fd7e14, #e55353);
+        }
+
+        .action-btn.split:hover {
+            box-shadow: 0 4px 15px rgba(253, 126, 20, 0.4);
+        }
+
+        .preview-area {
+            text-align: center;
+        }
+
+        .preview-canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .preview-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .preview-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .preview-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .page-info {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .split-settings {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .split-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .split-item-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .remove-split {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .status-message {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-info {
+            background: #cce7ff;
+            color: #004085;
+            border: 1px solid #b3d9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Libcararian</h1>
+        
+        <div class="main-grid">
+            <!-- サイドバー -->
+            <div class="sidebar">
+                <!-- ファイルアップロード -->
+                <div class="upload-area" id="uploadArea">
+                    <p>PDFファイルをドラッグ&ドロップ<br>または</p>
+                    <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                        ファイルを選択
+                    </button>
+                    <input type="file" id="fileInput" class="file-input" multiple accept=".pdf">
+                </div>
+
+                <!-- ファイルリスト -->
+                <div class="file-list" id="fileList">
+                    <h3>読み込みファイル</h3>
+                    <div id="files"></div>
+                    <button class="btn danger" onclick="clearAllFiles()" style="margin-top: 10px;">
+                        全て削除
+                    </button>
+                </div>
+            </div>
+
+            <!-- メインコンテンツ -->
+            <div class="main-content">
+                <div id="statusMessage"></div>
+                
+                <!-- プレビューエリア -->
+                <div class="preview-area">
+                    <h3>プレビュー</h3>
+                    <div id="previewContent">
+                        <p>ファイルを選択してプレビューを表示</p>
+                    </div>
+                    <div class="preview-controls" id="previewControls" style="display: none;">
+                        <button class="preview-btn" onclick="previousPage()">◀ 前</button>
+                        <span class="page-info" id="pageInfo">1 / 1</span>
+                        <button class="preview-btn" onclick="nextPage()">次 ▶</button>
+                    </div>
+                    <canvas id="previewCanvas" class="preview-canvas" style="display: none;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let pdfFiles = [];
+        let currentPreviewFile = null;
+        let currentPage = 1;
+        let totalPages = 1;
+        let splitMode = false;
+
+        // PDF.js設定
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        // 初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+        });
+
+        function setupEventListeners() {
+            const fileInput = document.getElementById('fileInput');
+            const uploadArea = document.getElementById('uploadArea');
+
+            // ファイル選択
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // ドラッグ&ドロップ
+            uploadArea.addEventListener('dragover', handleDragOver);
+            uploadArea.addEventListener('drop', handleDrop);
+            uploadArea.addEventListener('dragleave', handleDragLeave);
+        }
+
+        function handleFileSelect(event) {
+            const files = Array.from(event.target.files);
+            loadFiles(files);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.add('dragover');
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            document.getElementById('uploadArea').classList.remove('dragover');
+            const files = Array.from(event.dataTransfer.files).filter(file => file.type === 'application/pdf');
+            loadFiles(files);
+        }
+
+        function handleDragLeave(event) {
+            document.getElementById('uploadArea').classList.remove('dragover');
+        }
+
+        async function loadFiles(files) {
+            showStatus('ファイルを読み込み中...', 'info');
+            
+            for (const file of files) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+                    const pageCount = pdfDoc.getPageCount();
+                    
+                    const fileData = {
+                        id: Date.now() + Math.random(),
+                        name: file.name,
+                        file: file,
+                        arrayBuffer: arrayBuffer,
+                        pdfDoc: pdfDoc,
+                        pageCount: pageCount
+                    };
+                    
+                    pdfFiles.push(fileData);
+                } catch (error) {
+                    showStatus(`ファイル "${file.name}" の読み込みに失敗しました: ${error.message}`, 'error');
+                }
+            }
+            
+            updateFileList();
+            showStatus(`${files.length}個のファイルを読み込みました`, 'success');
+        }
+
+        function updateFileList() {
+            const filesContainer = document.getElementById('files');
+            filesContainer.innerHTML = '';
+
+            pdfFiles.forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <div class="file-name">${file.name}</div>
+                    <div class="file-info">${file.pageCount}ページ</div>
+                    <div class="file-actions">
+                        <button class="btn" onclick="previewFile(${index})">プレビュー</button>
+                        <button class="btn" onclick="moveUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+                        <button class="btn" onclick="moveDown(${index})" ${index === pdfFiles.length - 1 ? 'disabled' : ''}>↓</button>
+                        <button class="btn danger" onclick="removeFile(${index})">削除</button>
+                    </div>
+                `;
+                filesContainer.appendChild(fileItem);
+            });
+        }
+
+        function removeFile(index) {
+            pdfFiles.splice(index, 1);
+            updateFileList();
+            if (currentPreviewFile === index) {
+                clearPreview();
+            }
+        }
+
+        function clearAllFiles() {
+            if (confirm('全てのファイルを削除しますか？')) {
+                pdfFiles = [];
+                updateFileList();
+                clearPreview();
+            }
+        }
+
+        function moveUp(index) {
+            if (index > 0) {
+                [pdfFiles[index], pdfFiles[index - 1]] = [pdfFiles[index - 1], pdfFiles[index]];
+                updateFileList();
+            }
+        }
+
+        function moveDown(index) {
+            if (index < pdfFiles.length - 1) {
+                [pdfFiles[index], pdfFiles[index + 1]] = [pdfFiles[index + 1], pdfFiles[index]];
+                updateFileList();
+            }
+        }
+
+        async function previewFile(fileIndex) {
+            const file = pdfFiles[fileIndex];
+            currentPreviewFile = fileIndex;
+            currentPage = 1;
+            
+            try {
+                const pdf = await pdfjsLib.getDocument(file.arrayBuffer).promise;
+                totalPages = pdf.numPages;
+                
+                document.getElementById('previewControls').style.display = 'flex';
+                document.getElementById('previewCanvas').style.display = 'block';
+                document.getElementById('previewContent').innerHTML = '';
+                
+                await renderPage(pdf, currentPage);
+                updatePageInfo();
+            } catch (error) {
+                showStatus(`プレビューの表示に失敗しました: ${error.message}`, 'error');
+            }
+        }
+
+        async function renderPage(pdf, pageNum) {
+            const page = await pdf.getPage(pageNum);
+            const canvas = document.getElementById('previewCanvas');
+            const context = canvas.getContext('2d');
+            
+            const viewport = page.getViewport({ scale: 1.5 });
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+        }
+
+        async function previousPage() {
+            if (currentPage > 1 && currentPreviewFile !== null) {
+                currentPage--;
+                const file = pdfFiles[currentPreviewFile];
+                const pdf = await pdfjsLib.getDocument(file.arrayBuffer).promise;
+                await renderPage(pdf, currentPage);
+                updatePageInfo();
+            }
+        }
+
+        async function nextPage() {
+            if (currentPage < totalPages && currentPreviewFile !== null) {
+                currentPage++;
+                const file = pdfFiles[currentPreviewFile];
+                const pdf = await pdfjsLib.getDocument(file.arrayBuffer).promise;
+                await renderPage(pdf, currentPage);
+                updatePageInfo();
+            }
+        }
+
+        function updatePageInfo() {
+            document.getElementById('pageInfo').textContent = `${currentPage} / ${totalPages}`;
+        }
+
+        function clearPreview() {
+            document.getElementById('previewControls').style.display = 'none';
+            document.getElementById('previewCanvas').style.display = 'none';
+            document.getElementById('previewContent').innerHTML = '<p>ファイルを選択してプレビューを表示</p>';
+            currentPreviewFile = null;
+        }
+
+        async function mergeFiles() {
+            if (pdfFiles.length === 0) {
+                showStatus('結合するファイルがありません', 'error');
+                return;
+            }
+
+            showStatus('PDFを結合中...', 'info');
+
+            try {
+                const mergedPdf = await PDFLib.PDFDocument.create();
+                
+                for (const file of pdfFiles) {
+                    const pages = await mergedPdf.copyPages(file.pdfDoc, file.pdfDoc.getPageIndices());
+                    pages.forEach(page => mergedPdf.addPage(page));
+                }
+
+                // オプション処理
+                if (document.getElementById('scaleToB5').checked) {
+                    await scaleToB5(mergedPdf);
+                }
+
+                if (document.getElementById('addPageNumbers').checked) {
+                    await addPageNumbers(mergedPdf);
+                }
+
+                if (document.getElementById('bookletMode').checked) {
+                    await convertToBooklet(mergedPdf);
+                }
+
+                const pdfBytes = await mergedPdf.save();
+                downloadFile(pdfBytes, 'merged.pdf');
+                showStatus('PDFの結合が完了しました', 'success');
+
+            } catch (error) {
+                showStatus(`結合に失敗しました: ${error.message}`, 'error');
+            }
+        }
+
+        async function scaleToB5(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            const b5Width = 516; // B5幅 (ポイント)
+            const b5Height = 729; // B5高さ (ポイント)
+
+            pages.forEach(page => {
+                const { width, height } = page.getSize();
+                const scaleX = b5Width / width;
+                const scaleY = b5Height / height;
+                const scale = Math.min(scaleX, scaleY);
+                
+                page.scaleContent(scale, scale);
+                page.setSize(b5Width, b5Height);
+            });
+        }
+
+        async function addPageNumbers(pdfDoc) {
+            const pages = pdfDoc.getPages();
+            
+            pages.forEach((page, index) => {
+                const { width, height } = page.getSize();
+                page.drawText(`${index + 1}`, {
+                    x: width - 50,
+                    y: 20,
+                    size: 12
+                });
+            });
+        }
+
+        async function convertToBooklet(pdfDoc) {
+            // 小冊子変換の実装 (簡略版)
+            const pages = pdfDoc.getPages();
+            if (pages.length % 4 !== 0) {
+                // 4の倍数になるまで空白ページを追加
+                const blankPagesNeeded = 4 - (pages.length % 4);
+                for (let i = 0; i < blankPagesNeeded; i++) {
+                    pdfDoc.addPage();
+                }
+            }
+        }
+
+        function toggleSplitMode() {
+            splitMode = !splitMode;
+            const splitSettings = document.getElementById('splitSettings');
+            
+            if (splitMode) {
+                splitSettings.style.display = 'block';
+                if (document.getElementById('splitItems').children.length === 0) {
+                    addSplitItem();
+                }
+            } else {
+                splitSettings.style.display = 'none';
+            }
+        }
+
+        function addSplitItem() {
+            const splitItems = document.getElementById('splitItems');
+            const itemIndex = splitItems.children.length;
+            
+            const splitItem = document.createElement('div');
+            splitItem.className = 'split-item';
+            splitItem.innerHTML = `
+                <div class="split-item-header">
+                    <strong>曲 ${itemIndex + 1}</strong>
+                    <button class="remove-split" onclick="removeSplitItem(this)">削除</button>
+                </div>
+                <div class="input-group">
+                    <label>曲名</label>
+                    <input type="text" class="song-name" placeholder="曲名を入力">
+                </div>
+                <div class="input-group">
+                    <label>開始ページ</label>
+                    <input type="number" class="start-page" min="1" value="1">
+                </div>
+                <div class="input-group">
+                    <label>終了ページ</label>
+                    <input type="number" class="end-page" min="1" value="1">
+                </div>
+            `;
+            
+            splitItems.appendChild(splitItem);
+        }
+
+        function removeSplitItem(button) {
+            button.closest('.split-item').remove();
+        }
+
+        async function splitFiles() {
+            if (pdfFiles.length === 0) {
+                showStatus('分割するファイルがありません', 'error');
+                return;
+            }
+
+            const splitItems = document.querySelectorAll('.split-item');
+            if (splitItems.length === 0) {
+                showStatus('分割設定がありません', 'error');
+                return;
+            }
+
+            showStatus('PDFを分割中...', 'info');
+
+            try {
+                const filenameFormat = document.getElementById('filenameFormat').value || '{曲名}';
+                
+                for (const item of splitItems) {
+                    const songName = item.querySelector('.song-name').value;
+                    const startPage = parseInt(item.querySelector('.start-page').value);
+                    const endPage = parseInt(item.querySelector('.end-page').value);
+                    
+                    if (!songName) continue;
+                    
+                    const splitPdf = await PDFLib.PDFDocument.create();
+                    
+                    // 全ファイルから指定ページ範囲を抽出
+                    let currentPageNum = 1;
+                    for (const file of pdfFiles) {
+                        const filePageCount = file.pdfDoc.getPageCount();
+                        
+                        if (currentPageNum <= endPage && (currentPageNum + filePageCount - 1) >= startPage) {
+                            const startInFile = Math.max(1, startPage - currentPageNum + 1);
+                            const endInFile = Math.min(filePageCount, endPage - currentPageNum + 1);
+                            
+                            const pageIndices = [];
+                            for (let i = startInFile - 1; i < endInFile; i++) {
+                                pageIndices.push(i);
+                            }
+                            
+                            const copiedPages = await splitPdf.copyPages(file.pdfDoc, pageIndices);
+                            copiedPages.forEach(page => splitPdf.addPage(page));
+                        }
+                        
+                        currentPageNum += filePageCount;
+                    }
+                    
+                    const pdfBytes = await splitPdf.save();
+                    const filename = filenameFormat.replace('{曲名}', songName) + '.pdf';
+                    downloadFile(pdfBytes, filename);
+                }
+                
+                showStatus('PDFの分割が完了しました', 'success');
+
+            } catch (error) {
+                showStatus(`分割に失敗しました: ${error.message}`, 'error');
+            }
+        }
+
+        function downloadFile(pdfBytes, filename) {
+            const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.innerHTML = `<div class="status-${type}">${message}</div>`;
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        // 分割実行時の処理を修正
+        document.querySelector('.action-btn.split').addEventListener('click', function() {
+            if (splitMode && document.getElementById('splitSettings').style.display === 'block') {
+                splitFiles();
+            } else {
+                toggleSplitMode();
+            }
+        });
+    </script>
+</body>
+</html>
