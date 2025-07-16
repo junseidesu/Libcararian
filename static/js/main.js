@@ -82,12 +82,11 @@ function setupRangeButtons() {
     });
 }
 setupRangeButtons();
-
 function setupCombineBySong(){
     const submitButton = document.getElementById('combineBySong');
     
-    submitButton.addEventListener('click', async function() {
-
+    submitButton.addEventListener('click', async function(event) {
+        event.preventDefault()
         
 
         // フォームデータを収集
@@ -127,4 +126,11 @@ function setupCombineBySong(){
         });
     });
 }
-setupCombineBySong();
+
+document.addEventListener('DOMContentLoaded', function() {
+    AutoUpload();
+    pdfPreview();
+    setupDialog();
+    setupRangeButtons();
+    setupCombineBySong(); // ここで呼び出す
+});
