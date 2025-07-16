@@ -125,5 +125,11 @@ def preview(filename):
             )
     return "File not found", 404
 
+@app.route("/combine_by_song", methods=["POST"])
+def combine_by_song():
+    data = request.get_json()
+    print(data)
+    return redirect(url_for("index"))
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)

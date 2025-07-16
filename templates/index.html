@@ -51,17 +51,17 @@
                     <label for="isNumbering">ページ番号</label>
                     <br>
                     <label for="start-number">開始番号：</label>
-                    <input type="number" name="start-number" placeholder="例：172">
+                    <input type="number" name="start-number" min="1" placeholder="例：172">
                     <br>
                     <label for="no-number-pages">表紙ページ数：</label>
-                    <input type="number" name="no-number-pages" placeholder="例：1"><br>
+                    <input type="number" name="no-number-pages" min="0" placeholder="例：1"><br>
                     <input type="submit" value="一括結合">
                 </form>
             </div>
             <button id="openButton">曲ごとに結合</button>
             <dialog id="myDialog">
                 <div id="gapArea">
-                    <form action="/combine_by_song" method="get">
+                    <form action="/combine_by_song" method="post">
                         <div class="prefix-panel">
                             <select id="prefix" name="prefix">
                                 <option value="nothing">-</option>
@@ -70,7 +70,7 @@
                                 <option value="male">男声</option>
                             </select>
                             <label for="initial-number">冒頭のページ番号：</label>
-                            <input type="number" name="initial-number"><br>
+                            <input type="number" name="initial-number" min="0"><br>
                         </div>
                         <div class="range-panel">
                             <div class="range-item">
@@ -78,14 +78,14 @@
                                 <label for="song-name">曲名：</label>
                                 <input type="text" id="song-name" name="song-name">
                                 <label for="start-number">開始：</label>
-                                <input type="number" name="start-number">
+                                <input type="number" name="start-number" min="1">
                                 <label for="end-number">終了：</label>
-                                <input type="number" name="end-number">
+                                <input type="number" name="end-number" min="1">
                                 <button type="button" class="delete-range-btn">x</button>
                             </div>
                         </div>
                         <button type="button" id="closeButton">閉じる</button>
-                        <button type="submit">曲ごとに結合</button>
+                        <button type="button" id="combineBySong">曲ごとに結合</button>
                     </form>
                     <template id="range-template">
                         <div class="range-item">
@@ -93,9 +93,9 @@
                             <label for="song-name">曲名：</label>
                             <input type="text" id="song-name" name="song-name">
                             <label for="start-number">開始：</label>
-                            <input type="number" name="start-number">
+                            <input type="number" name="start-number" min="1">
                             <label for="end-number">終了：</label>
-                            <input type="number" name="end-number">
+                            <input type="number" name="end-number" min="1">
                             <button type="button" class="delete-range-btn">x</button>
                         </div>
                     </template>

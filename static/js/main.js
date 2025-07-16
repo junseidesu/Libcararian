@@ -76,9 +76,55 @@ function setupRangeButtons() {
             panel.appendChild(clone);
         }
         // 「削除ボタン」がクリックされた場合
-        if (event.target.classList.contains('delete-range-btn')) {
+        if ((event.target.classList.contains('delete-range-btn'))&&document.querySelectorAll('.range-item').length>1) {
             event.target.closest('.range-item').remove();
         }
     });
 }
 setupRangeButtons();
+
+function setupCombineBySong(){
+    const submitButton = document.getElementById('combineBySong');
+    
+    submitButton.addEventListener('click', async function() {
+
+        
+
+        // フォームデータを収集
+        const prefix = document.getElementById('prefix').value;
+        const initialNumber = parseInt(document.getElementById('initial-number').value) || 1;
+        
+        // 曲の情報を収集
+        const songs = [];
+        const rangeItems = document.querySelectorAll('.range-item');
+        
+        rangeItems.forEach(item => {
+            const songName = item.querySelector('.song-name').value;
+            const startNumber = parseInt(item.querySelector('.start-number').value);
+            const endNumber = parseInt(item.querySelector('.end-number').value);
+            
+            if (songName && startNumber && endNumber) {
+                songs.push({
+                    name: songName,
+                    start: startNumber,
+                    end: endNumber
+                });
+            }
+        });
+        
+        // JSONデータを作成
+        const requestData = {
+            prefix: prefix,
+            initial_number: initialNumber,
+            songs: songs
+        };
+        const response = await fetch('/combine_by_song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestData)
+        });
+    });
+}
+setupCombineBySong();
