@@ -131,7 +131,6 @@ dialog {
     margin:auto;
     border-radius: 8px;
     border:transparent;
-    width: 600px;
 }
 /* dialogが表示された時の背景を暗くする */
 dialog::backdrop {
