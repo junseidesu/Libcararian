@@ -1,0 +1,5 @@
+steps:
+# ビルドステップの名前を指定します
+- name: 'gcr.io/cloud-builders/gcloud'
+  args: ['app', 'deploy'] # App Engine にデプロイするコマンド
+  timeout: '1600s' # デプロイにかかる時間に応じて調整
