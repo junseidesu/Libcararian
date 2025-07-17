@@ -3,3 +3,7 @@ steps:
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['app', 'deploy'] # App Engine にデプロイするコマンド
   timeout: '1600s' # デプロイにかかる時間に応じて調整
+
+# Cloud Build オプションを設定します
+options:
+  logging: CLOUD_LOGGING_ONLY # ビルドログをCloud Loggingにのみ出力する
