@@ -8,39 +8,108 @@ function AutoUpload(){
     });
 }
 
+// Global variables for PDF preview
+let currentPdf = null;
+let currentPageNum = 0; // 0-indexed page number
+let totalPages = 0;
+
+function updatePageControls() {
+    const prevButton = document.getElementById('prevPage');
+    const nextButton = document.getElementById('nextPage');
+    const pageNumberDisplay = document.getElementById('pageNumberDisplay');
+
+    if (currentPdf) {
+        prevButton.disabled = currentPageNum <= 0;
+        nextButton.disabled = currentPageNum >= totalPages - 1;
+        pageNumberDisplay.textContent = `ページ ${currentPageNum + 1} / ${totalPages}`;
+    } else {
+        prevButton.disabled = true;
+        nextButton.disabled = true;
+        pageNumberDisplay.textContent = 'ページ - / -';
+    }
+}
+
+async function renderPage(pageNum) {
+    if (!currentPdf || pageNum < 0 || pageNum >= totalPages) {
+        console.error('Invalid page number or PDF not loaded.');
+        return;
+    }
+
+    currentPageNum = pageNum;
+    updatePageControls();
+
+    const canvas = document.getElementById('preview-canvas');
+    const context = canvas.getContext('2d');
+
+    // PDF.jsのページ番号は1-indexedなので、currentPageNumに1を足します
+    const page = await currentPdf.getPage(currentPageNum + 1);
+    const viewport = page.getViewport({ scale: 1 });
+
+    // プレビューの幅に合わせてキャンバスのサイズとスケールを調整
+    const desiredWidth = 900; // 例: プレビューの望ましい幅
+    const scale = desiredWidth / viewport.width;
+    const scaledViewport = page.getViewport({ scale: scale});
+
+    canvas.width = scaledViewport.width;
+    canvas.height = scaledViewport.height;
+
+    const renderContext = {
+        canvasContext: context,
+        viewport: scaledViewport
+    };
+    await page.render(renderContext).promise;
+}
+
+
+
 function pdfPreview(){
     console.log('PDF Preview Initialized');
     const fileListItems = document.querySelectorAll('.file-list li');
-    const canvas=document.getElementById('preview-canvas');
-    const context=canvas.getContext('2d');
-    const previewPanel = document.getElementById('preview-panel');
+    
+    // Set worker source for PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    fileListItems.forEach(item =>{
+
+    fileListItems.forEach(item => {
         item.addEventListener('click', async function(event){
-            const targetLi=this;
-            const fileName=targetLi.dataset.fileName;
-            const pdfUrl=`/preview/${fileName}`;
+            const targetLi = this;
+            const fileName = targetLi.dataset.fileName;
+            const pdfUrl = `/preview/${fileName}`;
 
             try{
-                const loadingTask=pdfjsLib.getDocument(pdfUrl);
-                const pdf=await loadingTask.promise;
-
-                const page=await pdf.getPage(0);
-                const viewport=page.getViewport({scale:1});
-                canvas.width=viewport.width;
-                canvas.height=viewport.height;
-
-                const renderContext={
-                    canvasContext:context,
-                    viewport:viewport
-                };
-                await page.render(renderContext).promise;
+                // Load the PDF document
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                currentPdf = await loadingTask.promise;
+                totalPages = currentPdf.numPages;
+                
+                // Render the first page initially
+                await renderPage(0); // 最初のページ (0-indexed) をレンダリング
 
             }catch(error){
                 console.error('Error loading PDF:', error);
+                currentPdf = null;
+                totalPages = 0;
+                updatePageControls();
+                const canvas = document.getElementById('preview-canvas');
+                const context = canvas.getContext('2d');
+                context.clearRect(0, 0, canvas.width, canvas.height); // エラー時にキャンバスをクリア
             }
-        })
-    })
+        });
+    });
+
+    // Add event listeners for navigation buttons
+    document.getElementById('prevPage').addEventListener('click', () => {
+        if (currentPageNum > 0) {
+            renderPage(currentPageNum - 1);
+        }
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+        if (currentPageNum < totalPages - 1) {
+            renderPage(currentPageNum + 1);
+        }
+    });
+
+    updatePageControls(); // 初期ロード時にボタンの状態を更新
 }
 
 function setupDialog(){

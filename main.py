@@ -10,8 +10,8 @@ import zipfile
 
 app = Flask(__name__)
 app.secret_key="20041007"
-app.config["UPLOAD_FOLDER"]=os.path.join("tmp", "uploads")
-app.config["EDITED_FOLDER"]=os.path.join("tmp","edited")
+app.config["UPLOAD_FOLDER"]=os.path.join("/tmp", "uploads")
+app.config["EDITED_FOLDER"]=os.path.join("/tmp","edited")
 if not os.path.exists(app.config["UPLOAD_FOLDER"]):
     os.mkdir(app.config["UPLOAD_FOLDER"])
 if not os.path.exists(app.config["EDITED_FOLDER"]):
