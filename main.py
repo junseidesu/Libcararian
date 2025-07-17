@@ -10,10 +10,10 @@ app = Flask(__name__)
 app.secret_key="20041007"
 app.config["UPLOAD_FOLDER"]=os.path.join("/tmp", "uploads")
 app.config["EDITED_FOLDER"]=os.path.join("/tmp","edited")
-if not os.path.exists("uploads"):
-    os.mkdir("uploads")
-if not os.path.exists("edited"):
-    os.mkdir("edited")
+if not os.path.exists(app.config["UPLOAD_FOLDER"]):
+    os.mkdir(app.config["UPLOAD_FOLDER"])
+if not os.path.exists(app.config["EDITED_FOLDER"]):
+    os.mkdir(app.config["EDITED_FOLDER"])
 
 # セッションの永続化を無効にする（ブラウザを閉じるとセッションが終了）
 app.config["SESSION_PERMANENT"] = False
