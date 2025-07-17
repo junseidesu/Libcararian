@@ -29,7 +29,11 @@ Session(app)
 
 @app.route("/")
 def index():
-    files_info=session.get("files_info",default=[])
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
+
     file_names=[item["file_name"] for item in files_info]
     return render_template("index.html", file_names=file_names)
 
@@ -37,7 +41,10 @@ def index():
 def upload_file():
     #requestオブジェクトから"file"をリストで取得
     files=request.files.getlist("file")
-    files_info=session.get("files_info",default=[])
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
     """
     files_infoの構造
     files_info=[{
@@ -67,7 +74,11 @@ def upload_file():
 
 @app.route("/delete")
 def delete():
-    files_info=session.get("files_info",default=[])
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
+    
     target_indexies=[index for index,item in enumerate(files_info) if item["file_name"]=="バビロン.pdf"]
     for index in target_indexies:
         os.remove(files_info[index]["storedfile_path"])
@@ -77,7 +88,11 @@ def delete():
 
 @app.route("/clear")
 def clear():
-    files_info=session.get("files_info",default=[])
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
+
     for item in files_info:
         os.remove(item["storedfile_path"])
     files_info.clear()
@@ -86,7 +101,11 @@ def clear():
 
 @app.route("/combine")
 def combine():
-    files_info=session.get("files_info",default=[])
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
+    
     #change_to_booklet(input_files, output_path, center_gap_mm=0, unnumbering_page=0,start_page=1, isBooklet=True)
     input_files=[item["storedfile_path"] for item in files_info]
     output_path="edited\combine.pdf"
@@ -114,8 +133,12 @@ def combine():
 
 @app.route("/preview/<filename>")
 def preview(filename):
-    file_info=session.get("files_info",default=[])
-    for item in file_info:
+    if "files_info" in session:
+        files_info=session["files_info"]
+    else:
+        files_info=[]
+    
+    for item in files_info:
         if item["file_name"] == filename:
             return send_from_directory(
                 app.config["UPLOAD_FOLDER"],
