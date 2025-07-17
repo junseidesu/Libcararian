@@ -7,7 +7,6 @@ function AutoUpload(){
         }
     });
 }
-AutoUpload();
 
 function pdfPreview(){
     console.log('PDF Preview Initialized');
@@ -44,9 +43,6 @@ function pdfPreview(){
     })
 }
 
-pdfPreview();
-
-
 function setupDialog(){
     const openButton = document.getElementById('openButton');
     const closeButton = document.getElementById('closeButton');
@@ -62,8 +58,6 @@ function setupDialog(){
         myDialog.close();
     });
 }
-
-setupDialog();
 
 function setupRangeButtons() {
     const gapArea=document.getElementById('gapArea');
@@ -81,7 +75,6 @@ function setupRangeButtons() {
         }
     });
 }
-setupRangeButtons();
 function setupCombineBySong(){
     const submitButton = document.getElementById('combineBySong');
     
@@ -91,16 +84,16 @@ function setupCombineBySong(){
 
         // フォームデータを収集
         const prefix = document.getElementById('prefix').value;
-        const initialNumber = parseInt(document.getElementById('initial-number').value) || 1;
+        const initialNumber = parseInt(document.querySelector('input[name="initial-number"]').value) || 1;
         
         // 曲の情報を収集
         const songs = [];
         const rangeItems = document.querySelectorAll('.range-item');
         
         rangeItems.forEach(item => {
-            const songName = item.querySelector('.song-name').value;
-            const startNumber = parseInt(item.querySelector('.start-number').value);
-            const endNumber = parseInt(item.querySelector('.end-number').value);
+            const songName = item.querySelector('input[name="song-name"]').value;
+            const startNumber = parseInt(item.querySelector('input[name="start-number"]').value);
+            const endNumber = parseInt(item.querySelector('input[name="end-number"]').value);
             
             if (songName && startNumber && endNumber) {
                 songs.push({
@@ -110,7 +103,6 @@ function setupCombineBySong(){
                 });
             }
         });
-        
         // JSONデータを作成
         const requestData = {
             prefix: prefix,
@@ -124,6 +116,10 @@ function setupCombineBySong(){
                 },
                 body: JSON.stringify(requestData)
         });
+        
+        const myDialog = document.getElementById('myDialog');
+        myDialog.close();
+        alert("処理が完了しました！");
     });
 }
 

@@ -76,7 +76,7 @@
                             <div class="range-item">
                                 <button type="button" class="add-range-btn">+</button>
                                 <label for="song-name">曲名：</label>
-                                <input type="text" id="song-name" name="song-name">
+                                <input type="text" name="song-name">
                                 <label for="start-number">開始：</label>
                                 <input type="number" name="start-number" min="1">
                                 <label for="end-number">終了：</label>
@@ -91,7 +91,7 @@
                         <div class="range-item">
                             <button type="button" class="add-range-btn">+</button>
                             <label for="song-name">曲名：</label>
-                            <input type="text" id="song-name" name="song-name">
+                            <input type="text" name="song-name">
                             <label for="start-number">開始：</label>
                             <input type="number" name="start-number" min="1">
                             <label for="end-number">終了：</label>
@@ -101,11 +101,10 @@
                     </template>
                 </div>
             </dialog>
-            </div>
         </div>
     </div>
 
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>
