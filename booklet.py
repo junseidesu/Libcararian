@@ -12,6 +12,11 @@ margin_y=5
 box_width=30
 box_height=25
 
+def convert_to_B5(page):
+    page.transfer_rotation_to_content()
+    page.scale_to(B5_size[0],B5_size[1])
+    return page
+
 def change_to_booklet(
         input_files,
         output_path,
@@ -40,8 +45,9 @@ def change_to_booklet(
 
     #writerの各ページをB5にスケーリング
     for page in writer.pages:
-        page.transfer_rotation_to_content()
-        page.scale_to(B5_size[0],B5_size[1])
+        tmp_page=convert_to_B5(page)
+        page=tmp_page
+
 
     if isNumbering:
         temp_file_stream=io.BytesIO()

@@ -25,7 +25,7 @@ function pdfPreview(){
                 const loadingTask=pdfjsLib.getDocument(pdfUrl);
                 const pdf=await loadingTask.promise;
 
-                const page=await pdf.getPage(1);
+                const page=await pdf.getPage(0);
                 const viewport=page.getViewport({scale:1});
                 canvas.width=viewport.width;
                 canvas.height=viewport.height;
@@ -91,12 +91,14 @@ function setupCombineBySong(){
         const rangeItems = document.querySelectorAll('.range-item');
         
         rangeItems.forEach(item => {
+            const songNumber = parseInt(item.querySelector('input[name="song-number"]').value);
             const songName = item.querySelector('input[name="song-name"]').value;
             const startNumber = parseInt(item.querySelector('input[name="start-number"]').value);
             const endNumber = parseInt(item.querySelector('input[name="end-number"]').value);
             
             if (songName && startNumber && endNumber) {
                 songs.push({
+                    number:songNumber,
                     name: songName,
                     start: startNumber,
                     end: endNumber
@@ -119,7 +121,7 @@ function setupCombineBySong(){
         
         const myDialog = document.getElementById('myDialog');
         myDialog.close();
-        alert("処理が完了しました！");
+        window.location.href=response.url;
     });
 }
 

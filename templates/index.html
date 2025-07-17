@@ -51,7 +51,7 @@
                     <label for="isNumbering">ページ番号</label>
                     <br>
                     <label for="start-number">開始番号：</label>
-                    <input type="number" name="start-number" min="1" placeholder="例：172">
+                    <input type="number" name="start-number" min="0" placeholder="例：172">
                     <br>
                     <label for="no-number-pages">表紙ページ数：</label>
                     <input type="number" name="no-number-pages" min="0" placeholder="例：1"><br>
@@ -75,12 +75,14 @@
                         <div class="range-panel">
                             <div class="range-item">
                                 <button type="button" class="add-range-btn">+</button>
+                                <label for="song-number">曲番号：</label>
+                                <input type="number" name="song-number" min="0">
                                 <label for="song-name">曲名：</label>
                                 <input type="text" name="song-name">
                                 <label for="start-number">開始：</label>
-                                <input type="number" name="start-number" min="1">
+                                <input type="number" name="start-number" min="0">
                                 <label for="end-number">終了：</label>
-                                <input type="number" name="end-number" min="1">
+                                <input type="number" name="end-number" min="0">
                                 <button type="button" class="delete-range-btn">x</button>
                             </div>
                         </div>
@@ -90,12 +92,14 @@
                     <template id="range-template">
                         <div class="range-item">
                             <button type="button" class="add-range-btn">+</button>
+                            <label for="song-number">曲番号：</label>
+                            <input type="number" name="song-number" min="0">
                             <label for="song-name">曲名：</label>
                             <input type="text" name="song-name">
                             <label for="start-number">開始：</label>
-                            <input type="number" name="start-number" min="1">
+                            <input type="number" name="start-number" min="0">
                             <label for="end-number">終了：</label>
-                            <input type="number" name="end-number" min="1">
+                            <input type="number" name="end-number" min="0">
                             <button type="button" class="delete-range-btn">x</button>
                         </div>
                     </template>
