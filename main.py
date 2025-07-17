@@ -8,8 +8,8 @@ from booklet import change_to_booklet
 
 app = Flask(__name__)
 app.secret_key="20041007"
-app.config["UPLOAD_FOLDER"]="uploads"
-app.config["EDITED_FOLDER"]="edited"
+app.config["UPLOAD_FOLDER"]=os.path.join("/tmp", "uploads")
+app.config["EDITED_FOLDER"]=os.path.join("/tmp","edited")
 if not os.path.exists("uploads"):
     os.mkdir("uploads")
 if not os.path.exists("edited"):
@@ -20,7 +20,7 @@ app.config["SESSION_PERMANENT"] = False
 # セッションのタイプをファイルシステムに設定（プロダクションではRedisやDBが推奨されます）
 app.config["SESSION_TYPE"] = "filesystem"
 # ファイルシステムセッションを保存するディレクトリ
-app.config["SESSION_FILE_DIR"] = "tmp/flask_sessions"
+app.config["SESSION_FILE_DIR"] = os.path.join("/tmp","flask_session")
 # セッション保存ディレクトリが存在しない場合は作成
 if not os.path.exists(app.config["SESSION_FILE_DIR"]):
     os.makedirs(app.config["SESSION_FILE_DIR"])
