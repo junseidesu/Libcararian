@@ -17,6 +17,9 @@ handlers:
 - url: /.*
   script: auto
 
+env_variables:
+  TMP_PATH: /tmp
+
 # インスタンスのスケーリング設定を定義します。
 # これらはデフォルト値であり、必要に応じて調整できます。
 automatic_scaling:
@@ -26,10 +29,3 @@ automatic_scaling:
   target_throughput_utilization: 0.65 # スループットがこの値を超えるとスケールアウトを検討します。
   max_concurrent_requests: 80 # 各インスタンスが同時に処理できる最大リクエスト数です。
 
-# 環境変数が必要な場合は、ここに定義します。
-# env_variables:
-  # SECRET_KEY: 'your_super_secret_key_here'
-  # あなたのmain.pyでは app.secret_key="20041007" とハードコードされています。
-  # 本番環境では、このように直接コードに書くのではなく、環境変数から取得するように変更し、
-  # ここで設定するか、Cloud Secret Managerのようなサービスで安全に管理することを推奨します。
-  # 例: app.secret_key = os.getenv('SECRET_KEY', 'default_fallback_key')
