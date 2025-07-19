@@ -194,10 +194,52 @@ function setupCombineBySong(){
     });
 }
 
+// New function for drag and drop
+function setupDragAndDrop() {
+    const uploadArea = document.querySelector('.upload-area');
+    const fileInput = document.querySelector('input[type="file"][name="file"]');
+    const uploadForm = document.getElementById('upload');
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false); // For preventing outside the area
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    // Highlight drop area when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.add('highlight'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, () => uploadArea.classList.remove('highlight'), false);
+    });
+
+    // Handle dropped files
+    uploadArea.addEventListener('drop', handleDrop, false);
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+
+        // Assign the dropped files to the file input
+        fileInput.files = files;
+
+        // Programmatically submit the form
+        uploadForm.submit();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     AutoUpload();
     pdfPreview();
     setupDialog();
     setupRangeButtons();
     setupCombineBySong(); // ここで呼び出す
+    setupDragAndDrop
 });

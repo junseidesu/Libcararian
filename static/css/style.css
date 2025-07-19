@@ -81,6 +81,12 @@ input[type="number"]{
     transform: translateY(-5px);
 }
 
+/* Highlight for drag and drop */
+.upload-area.highlight {
+    background-color: #e0f2f7; /* Light blue background */
+    border-color: #00bcd4; /* Cyan border */
+}
+
 /* File List Styles */
 .file-list {
     flex-grow: 1;

@@ -6,26 +6,24 @@ from pypdf import PdfReader, PdfWriter
 from flask_session import Session
 from booklet import change_to_booklet, convert_to_B5
 import zipfile
+from dotenv import load_dotenv
+import os
 
+load_dotenv()  # .envファイルの読み込み
+TMP_PATH = os.getenv("TMP_PATH", "tmp")  # .envからTMP_PATHを取得、デフォルトは"tmp"
 
 app = Flask(__name__)
 app.secret_key="20041007"
-app.config["UPLOAD_FOLDER"]=os.path.join("/tmp", "uploads")
-app.config["EDITED_FOLDER"]=os.path.join("/tmp","edited")
-if not os.path.exists(app.config["UPLOAD_FOLDER"]):
-    os.mkdir(app.config["UPLOAD_FOLDER"])
-if not os.path.exists(app.config["EDITED_FOLDER"]):
-    os.mkdir(app.config["EDITED_FOLDER"])
-
-# セッションの永続化を無効にする（ブラウザを閉じるとセッションが終了）
+app.config["UPLOAD_FOLDER"]=os.path.join(TMP_PATH, "uploads")
+app.config["EDITED_FOLDER"]=os.path.join(TMP_PATH,"edited")
 app.config["SESSION_PERMANENT"] = False
-# セッションのタイプをファイルシステムに設定（プロダクションではRedisやDBが推奨されます）
 app.config["SESSION_TYPE"] = "filesystem"
-# ファイルシステムセッションを保存するディレクトリ
-app.config["SESSION_FILE_DIR"] = os.path.join("/tmp","flask_session")
-# セッション保存ディレクトリが存在しない場合は作成
-if not os.path.exists(app.config["SESSION_FILE_DIR"]):
-    os.makedirs(app.config["SESSION_FILE_DIR"])
+app.config["SESSION_FILE_DIR"] = os.path.join(TMP_PATH,"flask_session")
+
+for folder in [app.config["UPLOAD_FOLDER"], app.config["EDITED_FOLDER"], app.config["SESSION_FILE_DIR"]]:
+    if not os.path.exists(folder):
+        os.makedirs(folder, exist_ok=True)
+
 
 Session(app)
 
@@ -110,7 +108,7 @@ def combine():
     
     #change_to_booklet(input_files, output_path, center_gap_mm=0, unnumbering_page=0,start_page=1, isBooklet=True)
     input_files=[item["storedfile_path"] for item in files_info]
-    output_path="edited\combine.pdf"
+    output_path=os.path.join(app.config["EDITED_FOLDER"],"combine.pdf")
     center_gap_mm=20
     isNumbering=True if request.args.get("isNumbering")=="numbering" else False
     isBooklet=True if request.args.get("isBooklet")=="booklet" else False
