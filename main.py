@@ -143,11 +143,10 @@ def preview(filename):
     
     for item in files_info:
         if item["file_name"] == filename:
-            return send_from_directory(
-                app.config["UPLOAD_FOLDER"],
-                item["storedfile_name"],
-                as_attachment=False,
-                mimetype="application/pdf",
+            return send_file(
+                item["storedfile_path"],
+                as_attachment=False,  # プレビュー用なのでダウンロードはしない
+                mimetype="application/pdf"
             )
     return "File not found", 404
 
