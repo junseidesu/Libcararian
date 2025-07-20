@@ -224,5 +224,15 @@ def zip_download():
         download_name=zip_filename    # クライアントに提案するファイル名
     )
 
+@app.route("/update_file_order", methods=["POST"])
+def update_file_order():
+    files_info = session.get("files_info", [])
+    order=request.json.get("order", [])
+
+    map={item["file_name"]: item for item in files_info}
+    files_info_new=[map[name] for name in order]
+    session["files_info"]=files_info_new
+    return redirect(url_for("index"))
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)

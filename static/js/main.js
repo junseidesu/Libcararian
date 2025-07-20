@@ -61,12 +61,10 @@ async function renderPage(pageNum) {
     await page.render(renderContext).promise;
 }
 
-
-
 function pdfPreview(){
     console.log('PDF Preview Initialized');
-    const fileListItems = document.querySelectorAll('.file-list li');
-    
+    const fileList= document.getElementById('file-list');
+    const fileListItems =Array.from(fileList.children);
     // Set worker source for PDF.js
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
 

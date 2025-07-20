@@ -51,23 +51,31 @@
             <div class="operation-options" id="combine-all">
                 <span class="frame-title">一括結合</span>
                 <form action="/combine" method="get">
-                    <input type="checkbox" name="isBooklet" value="booklet">
-                    <label for="isBooklet">小冊子</label><br>
-                    <input type="checkbox" name="isNumbering" value="numbering">
-                    <label for="isNumbering">ページ番号</label>
-                    <br>
-                    <label for="start-number">開始番号：</label>
-                    <input type="number" name="start-number" min="0" placeholder="例：172">
-                    <br>
-                    <label for="no-number-pages">表紙ページ数：</label>
-                    <input type="number" name="no-number-pages" min="0" placeholder="例：1"><br>
+                    
+                    <label>
+                        <input type="checkbox" name="isBooklet" value="booklet">
+                        小冊子
+                    </label><br>
+
+                    <label>
+                        <input type="checkbox" name="isNumbering" value="numbering">
+                        ページ番号
+                    </label><br>
+
+                    <label>開始番号：
+                        <input type="number" name="start-number" min="0" placeholder="例：172">
+                    </label><br>
+
+                    <label>表紙ページ数：
+                        <input type="number" name="no-number-pages" id="no-number-pages" min="0" >
+                    </label><br>
                     <input type="submit" value="一括結合">
                 </form>
             </div>
             <button id="openButton">曲ごとに結合</button>
             <dialog id="myDialog">
                 <div id="gapArea">
-                    <div>
+                    <div>placeholder="例：1"
                         <div class="prefix-panel">
                             <select id="prefix" name="prefix">
                                 <option value="nothing">-</option>
@@ -75,20 +83,22 @@
                                 <option value="female">女声</option>
                                 <option value="male">男声</option>
                             </select>
-                            <label for="initial-number">冒頭のページ番号：</label>
-                            <input type="number" name="initial-number" min="0"><br>
+                            <label>冒頭のページ番号：
+                                <input type="number" name="initial-number" id="initial-number" min="0">
+                            </label>
+                            <br>
                         </div>
                         <div class="range-panel">
                             <div class="range-item">
                                 <button type="button" class="add-range-btn">+</button>
-                                <label for="song-number">曲番号：</label>
-                                <input type="number" name="song-number" min="0">
-                                <label for="song-name">曲名：</label>
-                                <input type="text" name="song-name">
-                                <label for="start-number">開始：</label>
-                                <input type="number" name="start-number" min="0">
-                                <label for="end-number">終了：</label>
-                                <input type="number" name="end-number" min="0">
+                                <label>曲番号：<input type="number" name="song-number" id="song-number" min="0"></label>
+                                
+                                <label>曲名：<input type="text" name="song-name" id="song-name"></label>
+                                
+                                <label>開始：<input type="number" name="start-number" min="0"></label>
+                                
+                                <label>終了：<input type="number" name="end-number" min="0"></label>
+                                
                                 <button type="button" class="delete-range-btn">x</button>
                             </div>
                         </div>
@@ -98,14 +108,14 @@
                     <template id="range-template">
                         <div class="range-item">
                             <button type="button" class="add-range-btn">+</button>
-                            <label for="song-number">曲番号：</label>
-                            <input type="number" name="song-number" min="0">
-                            <label for="song-name">曲名：</label>
-                            <input type="text" name="song-name">
-                            <label for="start-number">開始：</label>
-                            <input type="number" name="start-number" min="0">
-                            <label for="end-number">終了：</label>
-                            <input type="number" name="end-number" min="0">
+                            <label>曲番号：<input type="number" name="song-number" id="song-number" min="0"></label>
+                            
+                            <label>曲名：<input type="text" name="song-name" id="song-name"></label>
+                            
+                            <label>開始：<input type="number" name="start-number" min="0"></label>
+                            
+                            <label>終了：<input type="number" name="end-number" min="0"></label>
+                            
                             <button type="button" class="delete-range-btn">x</button>
                         </div>
                     </template>
