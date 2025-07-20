@@ -97,7 +97,9 @@ def clear():
         files_info=[]
 
     for item in files_info:
-        os.remove(item["storedfile_path"])
+        if os.path.exists(item["storedfile_path"]):
+            os.remove(item["storedfile_path"])
+    
     files_info.clear()
     session["files_info"]=files_info
     return redirect(url_for("index"))

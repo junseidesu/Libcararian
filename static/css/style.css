@@ -1,13 +1,13 @@
-/* Universal Styles */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap');
+
 * {
     margin: 0;
     box-sizing: border-box;
 }
 
-/* Body Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #f1f1f1;
+    font-family: 'Noto Sans JP', sans-serif;
+    background: #f8f9fa;
     min-height: 95vh;
 }
 
@@ -17,47 +17,82 @@ h1 {
     color: #000000;
     margin: 30px;
     font-size: 2.5rem;
+    font-weight:700;
 }
 
 ul{
     text-align:left;
     white-space: nowrap;
+    list-style: none;
+    padding: 0;
 }
 
 li{
+    padding: 8px 15px;
     list-style-type: none;
+    border-bottom: 1px solid #eee;
+    transition: all 0.2s ease-out;
 }
 
 li:hover{
-    background-color: #dadada;
+    background-color: #f1f3f5;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+/* Text and Number Inputs */
+input[type="text"],
+input[type="number"] {
+    padding: 10px 12px;
+    border: 1px solid #ced4da;
+    border-radius: 8px; /* 角を丸く */
+    font-size: 1rem;
+    color: #495057;
+    background-color: #fff;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+/* ホバー時に少し枠線を濃くする */
+input[type="text"]:hover,
+input[type="number"]:hover {
+    border-color: #adb5bd;
+}
+
+/* 選択されたときに枠線を青くし、影をつける */
+input[type="text"]:focus,
+input[type="number"]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
 }
 
 input[type="number"]{
-    max-width:50px;
+    max-width:60px;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
 }
 
-/* Container Styles */
 .container {
     max-width: 1400px;
     margin: 0 auto;
     padding: 20px;
     display: flex;
-    gap: 10px;
+    gap: 20px;
     height: 90vh;
 }
 
-/* Container Item Styles */
 .container-item {
-    padding: 10px;
+    padding: 20px;
     text-align: center;
     background-color: #ffffff;
-    border-radius: 8px;
-    height: 90%;
+    border-radius: 12px;
+    height: 100%;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
 }
 
-/* Panel Specific Flex Grow */
 #file-panel {
     flex: 2;
     max-width: 400px;
@@ -71,62 +106,69 @@ input[type="number"]{
     flex: 2;
 }
 
-/* Upload Area Styles */
 .upload-area {
-    padding: 20px;
+    padding: 30px;
     width: 90%;
-    border: 3px dashed #ff7300;
-    border-radius: 8px;
+    border: 2px dashed #ff8c00;
+    border-radius: 12px;
     margin: 10px auto;
-    transition:transform 0.3s ease-out;
+    transition:transform 0.3s ease-out, background-color 0.3s;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #ffffff;
 }
 
 .upload-area:hover{
     transform: translateY(-5px);
+    border-color: #ff4400;
+    background-color: #ffd9b6;
 }
 
-/* Highlight for drag and drop */
 .upload-area.highlight {
-    background-color: #e0f2f7; /* Light blue background */
-    border-color: #00bcd4; /* Cyan border */
+    background-color: #e0f2f7;
+    border-color: #00bcd4;
 }
 
-/* File List Styles */
 #file-list {
     flex-grow: 1;
     width: 90%;
-    border: 2px solid #ff7300;
+    border: 1px solid #ff8c00;
     overflow-y: auto;
     padding: 10px;
-    border-radius: 8px;
-    margin: 0 auto;
+    border-radius: 12px;
+    margin: 10px auto;
     overflow-x: auto;
 }
 
-/* List Operation Styles */
 #list-operation {
     display: flex;
     gap: 10px;
     justify-content: center;
+    margin-bottom:10px;
 }
+
+
 
 .operation-options{
     position:relative;
     width:90%;
-    margin-bottom:40px;
-    border:2px solid #ff7300;
+    margin-bottom:20px;
+    border: 1px solid #ff8c00;
     border-radius: 8px;
     margin:10px auto;
-    padding:10px;
+    padding: 20px 15px;
 }
 
 .frame-title{
     position:absolute;
-    top:-15px;
+    top:-12px;
     left:15px;
     padding:0 10px;
     background-color: #ffffff;
-    font-weight: bold;
+    font-weight: 500;
+    color: #495057;
 }
 
 
@@ -137,26 +179,98 @@ input[type="number"]{
 }
 
 dialog {
-    padding: 20px;
+    padding: 30px;
     margin:auto;
-    border-radius: 8px;
-    border:transparent;
+    border-radius: 12px;
+    border:none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
-/* dialogが表示された時の背景を暗くする */
+
 dialog::backdrop {
     background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
 }
 
 #gapArea{
     padding:20px;
-    border: 2px solid #ff7300;
-    border-radius: 8px;
+    border: 1px solid #ff8c00;
+    border-radius: 12px;
 }
 
 .prefix-panel{
-    margin-bottom:10px;
+    margin-bottom:15px;
 }
 
 .range-panel{
-    margin:5px;
+    margin:5px 0;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column; /* パネルを縦積みに変更 */
+        height: auto;           /* 高さを自動に */
+        padding: 10px;
+    }
+
+    .container-item {
+        height: auto;           /* パネルの高さを自動に */
+        min-height: 300px;      /* 最低限の高さを確保 */
+        margin-bottom: 20px;
+    }
+    
+    #file-panel {
+        max-width: 100%; /* ファイルパネルの最大幅を解除 */
+    }
+
+    h1 {
+        font-size: 2rem; /* 見出しを少し小さく */
+    }
+}
+
+/* For Mobile phones (768px and below) */
+@media (max-width: 768px) {
+    body {
+        min-height: 100vh;
+    }
+    
+    .container {
+        gap: 15px;
+    }
+
+    .container-item {
+        padding: 15px;
+    }
+
+    .upload-area {
+        padding: 20px;
+    }
+
+    #list-operation {
+        flex-wrap: wrap; /* ボタンが2行になることを許可 */
+    }
+
+    #preview-canvas {
+        max-height: 80%; /* プレビューの高さを調整 */
+        max-width: 100%;
+    }
+
+    dialog {
+        width: 90%; /* ダイアログの幅を画面に合わせる */
+        padding: 20px;
+    }
+    
+    /* ダイアログ内の入力欄を縦に並べる */
+    #gapArea .range-item {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start; /* 左揃えに */
+        border-bottom: 1px solid #eee;
+        padding-bottom: 15px;
+        margin-bottom: 15px;
+    }
+
+    #gapArea .range-item button {
+        align-self: flex-end; /* 削除ボタンを右端に */
+    }
 }
