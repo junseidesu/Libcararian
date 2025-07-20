@@ -24,6 +24,10 @@ ul{
     white-space: nowrap;
 }
 
+li{
+    list-style-type: none;
+}
+
 li:hover{
     background-color: #dadada;
 }
