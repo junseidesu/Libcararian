@@ -1,9 +1,7 @@
 steps:
-# ビルドステップの名前を指定します
-- name: 'gcr.io/cloud-builders/gcloud'
-  args: ['app', 'deploy'] # App Engine にデプロイするコマンド
-  timeout: '1600s' # デプロイにかかる時間に応じて調整
-
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  args: ['gcloud', 'app', 'deploy']
+  timeout: '1600s'
 # Cloud Build オプションを設定します
 options:
   logging: CLOUD_LOGGING_ONLY # ビルドログをCloud Loggingにのみ出力する
