@@ -88,7 +88,7 @@ input[type="number"]{
 }
 
 /* File List Styles */
-.file-list {
+#file-list {
     flex-grow: 1;
     width: 90%;
     border: 2px solid #ff7300;

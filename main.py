@@ -80,7 +80,11 @@ def delete():
     
     target_indexies=[index for index,item in enumerate(files_info) if item["file_name"]=="バビロン.pdf"]
     for index in target_indexies:
-        os.remove(files_info[index]["storedfile_path"])
+        try:
+            os.remove(files_info[index]["storedfile_path"])
+        except FileNotFoundError:
+            print(f"File not found: {files_info[index]['storedfile_path']}")
+        
         files_info.pop(index)
     session["files_info"]=files_info
     return redirect(url_for("index"))
@@ -123,7 +127,7 @@ def combine():
         isBooklet=isBooklet
     )
     return send_from_directory(
-        "edited",
+        app.config["EDITED_FOLDER"],
         "combine.pdf",
         as_attachment=True,
         mimetype="application/pdf",

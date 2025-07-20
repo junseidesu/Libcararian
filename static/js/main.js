@@ -6,6 +6,7 @@ function AutoUpload(){
             form.submit();
         }
     });
+    setupFileListSortable();
 }
 
 // Global variables for PDF preview
@@ -235,11 +236,32 @@ function setupDragAndDrop() {
     }
 }
 
+function setupFileListSortable() {
+    const fileList = document.getElementById('file-list');
+    
+    // Sortable.jsを使用してファイルリストをドラッグ＆ドロップ可能にする
+    new Sortable(fileList, {
+        animation: 150,
+        onEnd: function (evt) {
+            // ドラッグ＆ドロップ後の処理
+            const orderedFiles =Array.from(fileList.children).map(li => li.dataset.fileName);
+            fetch('/update_file_order',{
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ order: orderedFiles })
+            })
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     AutoUpload();
     pdfPreview();
     setupDialog();
     setupRangeButtons();
     setupCombineBySong(); // ここで呼び出す
-    setupDragAndDrop
+    setupDragAndDrop();
+    setupFileListSortable(); // ファイルリストのソート機能をセットアップ
 });
