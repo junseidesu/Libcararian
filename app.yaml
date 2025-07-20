@@ -1,4 +1,4 @@
-runtime: python39  # 使用するPythonのバージョンを指定します。例: python39, python310, python311, python312
+runtime: python312  # 使用するPythonのバージョンを指定します。例: python39, python310, python311, python312
 env: standard      # App Engine Standard Environment を使用します。
 
 # アプリケーションのエントリポイントを定義します。
@@ -19,8 +19,7 @@ handlers:
 
 env_variables:
   TMP_PATH: /tmp
-  IS_GAE: GAE
-  CLOUD_STORAGE_BUCKET: your-cloud-storage-bucket-name  # GAEで使用するCloud Storageのバケット名を指定します。
+  CLOUD_STORAGE_BUCKET: libcararian_storage  # GAEで使用するCloud Storageのバケット名を指定します。
 
 # インスタンスのスケーリング設定を定義します。
 # これらはデフォルト値であり、必要に応じて調整できます。
