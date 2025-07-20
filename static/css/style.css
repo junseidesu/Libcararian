@@ -231,9 +231,14 @@ dialog::backdrop {
 @media (max-width: 768px) {
     body {
         min-height: 100vh;
+        padding: 0; 
+        margin: 0;
     }
     
     .container {
+        gap: 15px;
+        width: 100%;
+        padding: 10px 5px; /* 上下10px、左右5px */
         gap: 15px;
     }
 
