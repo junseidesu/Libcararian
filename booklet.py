@@ -1,4 +1,4 @@
-from pypdf import PdfReader, PdfWriter
+from pypdf import *
 import fitz
 import io
 
@@ -14,7 +14,11 @@ box_height=25
 
 def convert_to_B5(page):
     page.transfer_rotation_to_content()
-    page.scale_to(B5_size[0],B5_size[1])
+    page_width=page.mediabox.width
+    page_height=page.mediabox.height
+    sx=B5_size[0]/page_width
+    sy=B5_size[1]/page_height
+    page.scale(sx=sx, sy=sy)
     return page
 
 def change_to_booklet(
@@ -45,8 +49,7 @@ def change_to_booklet(
 
     #writerの各ページをB5にスケーリング
     for page in writer.pages:
-        tmp_page=convert_to_B5(page)
-        page=tmp_page
+        page=convert_to_B5(page)
 
 
     if isNumbering:
