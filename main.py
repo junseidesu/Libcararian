@@ -7,7 +7,6 @@ from flask_session import Session
 from booklet import change_to_booklet, convert_to_B5
 import zipfile
 from dotenv import load_dotenv
-import os
 
 load_dotenv()  # .envファイルの読み込み
 TMP_PATH = os.getenv("TMP_PATH", "tmp")  # .envからTMP_PATHを取得、デフォルトは"tmp"
@@ -112,14 +111,14 @@ def combine():
     center_gap_mm=20
     isNumbering=True if request.args.get("isNumbering")=="numbering" else False
     isBooklet=True if request.args.get("isBooklet")=="booklet" else False
-    unnmbering_page=int(request.args.get("no-number-pages"))
+    unnumbering_page=int(request.args.get("no-number-pages"))
     start_page=int(request.args.get("start-number"))
     change_to_booklet(
         input_files=input_files,
         output_path=output_path,
         center_gap_mm=center_gap_mm,
         isNumbering=isNumbering,
-        unnumbering_page=unnmbering_page,
+        unnumbering_page=unnumbering_page,
         start_page=start_page,
         isBooklet=isBooklet
     )
@@ -160,7 +159,7 @@ def combine_by_song():
         "female":"女声",
         "male":"男声"
     }
-    converted_prefix=prefix_pairing[prefix]
+    converted_prefix=prefix_pairing.get(prefix, "")  # デフォルトはそのままのprefixを使用
 
 
 
