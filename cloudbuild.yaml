@@ -1,7 +1,10 @@
 steps:
 - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'gcloud'
   args: ['gcloud', 'app', 'deploy']
   timeout: '1600s'
+  entrypoint: 'gcloud'
+
 # Cloud Build オプションを設定します
 options:
   logging: CLOUD_LOGGING_ONLY # ビルドログをCloud Loggingにのみ出力する
