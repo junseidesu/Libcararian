@@ -125,13 +125,13 @@ def generate_signed_url():
             return "ファイルが選択されていません", 400
         storedfile_name = str(uuid.uuid4()) + "_" + file.filename
         blob = bucket.blob(storedfile_name)
-        singed_url = blob.generate_signed_url_v4(
+        signed_url = blob.generate_signed_url_v4(
             version="v4",
             expiration=datetime.timedelta(minutes=15),
             method="PUT",
             content_type=file.content_type,
         )
-        return singed_url
+        return signed_url
 
 @app.route("/clear")
 def clear():
