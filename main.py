@@ -127,7 +127,7 @@ def generate_signed_url():
             return "ファイルが選択されていません", 400
         storedfile_name = str(uuid.uuid4()) + "_" + file_name
         blob = bucket.blob(storedfile_name)
-        signed_url = blob.generate_signed_url_v4(
+        signed_url = blob.generate_signed_url(
             version="v4",
             expiration=datetime.timedelta(minutes=15),
             method="PUT",
