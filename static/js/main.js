@@ -13,7 +13,8 @@ function AutoUpload(){
                                 'Content-Type': 'application/json'
                             },
                             body:JSON.stringify({
-                                file_name:file.name
+                                file_name:file.name,
+                                file_type:file.type
                             })
                         });
                         if(!urlResponse.ok){

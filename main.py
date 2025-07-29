@@ -120,16 +120,18 @@ def generate_signed_url():
     if not IS_GAE:
         return "GAE環境でのみ実行可能", 400
     else:
-        file=request.files.get("file")
-        if not file:
+        data=request.get_json()
+        file_name = data['file_name']
+        file_type = data['file_type']
+        if not file_name or not file_type:
             return "ファイルが選択されていません", 400
-        storedfile_name = str(uuid.uuid4()) + "_" + file.filename
+        storedfile_name = str(uuid.uuid4()) + "_" + file_name
         blob = bucket.blob(storedfile_name)
         signed_url = blob.generate_signed_url_v4(
             version="v4",
             expiration=datetime.timedelta(minutes=15),
             method="PUT",
-            content_type=file.content_type,
+            content_type=file_type,
         )
         return signed_url
 
