@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session, redirect, url_for, send_file
+from flask import Flask, render_template, request, session, redirect, url_for, send_file, jsonify
 import os
 from io import BytesIO
 import uuid
@@ -8,6 +8,7 @@ from booklet import change_to_booklet, convert_to_B5
 import zipfile
 from dotenv import load_dotenv
 from google.cloud import storage
+import datetime
 
 # --- 環境設定 ---
 load_dotenv()
@@ -111,9 +112,26 @@ def upload_file():
         files_info.append(file_data)
         
     session["files_info"] = files_info
+    print(files_info)
     return redirect(url_for("index"))
 
-@app.route("/clear")
+@app.route("/generate_signed_url", methods=["POST"])
+def generate_signed_url():
+    if not IS_GAE:
+        return "GAE環境でのみ実行可能", 400
+    else:
+        file=request.files.get("file")
+        if not file:
+            return "ファイルが選択されていません", 400
+        storedfile_name = str(uuid.uuid4()) + "_" + file.filename
+        blob = bucket.blob(storedfile_name)
+        singed_url = blob.generate_signed_url_v4(
+            version="v4",
+            expiration=datetime.timedelta(minutes=15),
+            method="PUT",
+            content_type=file.content_type,
+        )
+        return singed_url
 
 @app.route("/clear")
 def clear():
