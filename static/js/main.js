@@ -18,6 +18,7 @@ function AutoUpload(){
                         });
                         if(!urlResponse.ok){
                             alert(`URLの取得に失敗：${file.name}`);
+                            console.error(`URL取得エラー：${urlResponse.statusText}`);
                             continue;
                         }
                         const singedUrl=await urlResponse.text();
