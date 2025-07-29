@@ -44,7 +44,6 @@ else:
 
 Session(app)
 
-
 # --- ヘルパー関数 (コードの冗長性を減らすため) ---
 
 def get_file_bytes(file_info):
@@ -82,7 +81,7 @@ def index():
     if "files_info" not in session:
         session["files_info"] = []
     file_names = [item["file_name"] for item in session["files_info"]]
-    return render_template("index.html", file_names=file_names)
+    return render_template("index.html", file_names=file_names, is_gae=IS_GAE)
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
@@ -113,6 +112,8 @@ def upload_file():
         
     session["files_info"] = files_info
     return redirect(url_for("index"))
+
+@app.route("/clear")
 
 @app.route("/clear")
 def clear():

@@ -124,7 +124,9 @@
         </div>
     </div>
 
-
+<script>
+    const IS_GAE = {{ is_gae | tojson }};
+</script>
 <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 </html>

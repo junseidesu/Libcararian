@@ -1,9 +1,45 @@
 function AutoUpload(){
     const fileInput=document.querySelector('input[type="file"][name="file"]')
     const form=document.querySelector('form[id="upload"]')
-    fileInput.addEventListener('change',function(){
+    fileInput.addEventListener('change',async function(){
         if(this.files.length>0){
-            form.submit();
+            if(IS_GAE){
+                const fileDataList=Array.from(fileInput.files)
+                try{
+                    for(const file of fileDataList){
+                        const urlResponse=await fetch("/generate_signed_url", {
+                            method: 'POST',
+                            headers:{
+                                'Content-Type': 'application/json'
+                            },
+                            body:JSON.stringify({
+                                file_name:file.name
+                            })
+                        });
+                        if(!urlResponse.ok){
+                            alert(`URLの取得に失敗：${file.name}`);
+                            continue;
+                        }
+                        const singedUrl=await urlResponse.text();
+                        const uploadResnpnse=fetch(singedUrl, {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': file.type,
+                            },
+                            body:file
+                        });
+                        if(!uploadResnpnse.ok){
+                            alert(`ファイルのアップロードに失敗：${file.name}`);
+                            continue;
+                        }
+                    }
+                }catch(error){
+                    alert(`エラー発生：${error.message}`);
+                }
+            }else{
+                form.submit();
+            }
+            
         }
     });
     setupFileListSortable();
@@ -253,6 +289,8 @@ function setupFileListSortable() {
         }
     });
 }
+
+
 
 document.addEventListener('DOMContentLoaded', function() {
     AutoUpload();
