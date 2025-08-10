@@ -124,6 +124,7 @@ def gen_signed_url():
         file_name = data['file_name']
         file_type = data['file_type']
         if not file_name or not file_type:
+            print("ノーファイル")
             return "ファイルが選択されていません", 400
         
         storedfile_name = str(uuid.uuid4()) + "_" + file_name
