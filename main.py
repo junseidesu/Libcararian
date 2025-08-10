@@ -116,7 +116,7 @@ def upload_file():
     return redirect(url_for("index"))
 
 @app.route("/generate_signed_url", methods=["POST"])
-def generate_signed_url():
+def gen_signed_url():
     if not IS_GAE:
         return "GAE環境でのみ実行可能", 400
     else:
