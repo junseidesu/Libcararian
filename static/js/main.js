@@ -2,6 +2,7 @@ function AutoUpload(){
     const fileInput=document.querySelector('input[type="file"][name="file"]')
     const form=document.querySelector('form[id="upload"]')
     fileInput.addEventListener('change',async function(){
+        console.log(this.files);
         if(this.files.length>0){
             if(IS_GAE){
                 const fileDataList=Array.from(fileInput.files)
