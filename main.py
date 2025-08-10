@@ -125,7 +125,19 @@ def generate_signed_url():
         file_type = data['file_type']
         if not file_name or not file_type:
             return "ファイルが選択されていません", 400
+        
         storedfile_name = str(uuid.uuid4()) + "_" + file_name
+        file_data = {
+            "file_id": str(uuid.uuid4()),
+            "file_name": file_name,
+            "storedfile_name": storedfile_name,
+            "uploaded": False  # アップロード完了フラグ
+        }
+    
+        if "files_info" not in session:
+            session["files_info"] = []
+            session["files_info"].append(file_data)
+            
         blob = bucket.blob(storedfile_name)
         signed_url = blob.generate_signed_url(
             version="v4",
@@ -133,7 +145,27 @@ def generate_signed_url():
             method="PUT",
             content_type=file_type,
         )
-        return signed_url
+
+        return {
+            "signed_url": signed_url,
+            "file_id": file_data["file_id"]
+        }
+    
+@app.route("/confirm_upload", methods=["POST"])
+def confirm_upload():
+    """クライアントからアップロード完了通知を受け取る"""
+    data = request.get_json()
+    file_id = data.get("file_id")
+    
+    # セッション内のファイル情報を更新
+    files_info = session.get("files_info", [])
+    for file_info in files_info:
+        if file_info["file_id"] == file_id:
+            file_info["uploaded"] = True
+            break
+    
+    session["files_info"] = files_info
+    return {"status": "success"}
 
 @app.route("/clear")
 def clear():

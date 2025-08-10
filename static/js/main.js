@@ -22,8 +22,9 @@ function AutoUpload(){
                             console.error(`URL取得エラー：${urlResponse.statusText}`);
                             continue;
                         }
-                        const singedUrl=await urlResponse.text();
-                        const uploadResnpnse=fetch(singedUrl, {
+                        const response=await urlResponse.json();
+
+                        const uploadResponse=fetch(response.signed_url, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': file.type,
@@ -34,11 +35,23 @@ function AutoUpload(){
                             alert(`ファイルのアップロードに失敗：${file.name}`);
                             continue;
                         }
+
+                        await fetch("/confirm_upload", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                file_id: response.file_id
+                            })
+                        });
                     }
+                    window.location.reload();
                 }catch(error){
                     alert(`エラー発生：${error.message}`);
                 }
             }else{
+                const form=document.querySelector('form[id="upload"]');
                 form.submit();
             }
             
