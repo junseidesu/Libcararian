@@ -24,14 +24,14 @@ function AutoUpload(){
                         }
                         const response=await urlResponse.json();
 
-                        const uploadResponse=fetch(response.signed_url, {
+                        const uploadResponse=await fetch(response.signed_url, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': file.type,
                             },
                             body:file
                         });
-                        if(!uploadResnpnse.ok){
+                        if(!uploadResponse.ok){
                             alert(`ファイルのアップロードに失敗：${file.name}`);
                             continue;
                         }
