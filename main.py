@@ -143,7 +143,7 @@ def gen_signed_url():
             version="v4",
             expiration=datetime.timedelta(minutes=15),
             method="PUT",
-            content_type=file_type,
+            content_type=file_type
         )
 
         return {
