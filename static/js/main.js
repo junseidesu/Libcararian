@@ -23,7 +23,7 @@ function AutoUpload(){
                             continue;
                         }
                         const response=await urlResponse.json();
-
+                        console.log(response);
                         const uploadResponse=await fetch(response.signed_url, {
                             method: 'PUT',
                             headers: {
