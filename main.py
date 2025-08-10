@@ -137,6 +137,7 @@ def gen_signed_url():
         if "files_info" not in session:
             session["files_info"] = []
         session["files_info"].append(file_data)
+        print(storedfile_name)
             
         blob = bucket.blob(storedfile_name)
         signed_url = blob.generate_signed_url(
