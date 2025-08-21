@@ -1,9 +1,13 @@
 function AutoUpload(){
     const fileInput=document.querySelector('input[type="file"][name="file"]')
     const form=document.querySelector('form[id="upload"]')
+    const loadingIndicator = document.getElementById('loading-indicator');
+
     fileInput.addEventListener('change',async function(){
         console.log(this.files);
         if(this.files.length>0){
+            loadingIndicator.style.display = 'block'
+            
             if(IS_GAE){
                 const fileDataList=Array.from(fileInput.files)
                 try{
@@ -52,7 +56,6 @@ function AutoUpload(){
                     alert(`エラー発生：${error.message}`);
                 }
             }else{
-                const form=document.querySelector('form[id="upload"]');
                 form.submit();
             }
             

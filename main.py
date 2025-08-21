@@ -10,42 +10,53 @@ from dotenv import load_dotenv
 from google.cloud import storage
 import datetime
 
-# --- 環境設定 ---
+# =============================================================================
+# 環境設定
+# =============================================================================
 load_dotenv()
 
-# App Engine環境で実行されているかを環境変数で判定
-# GAE環境では'GAE_ENV'が'standard'で始まるため、これを利用するのが確実
+# App Engine環境判定
+# GAE環境では'GAE_ENV'環境変数が'standard'で始まる
 IS_GAE = os.getenv('GAE_ENV', '').startswith('standard')
 
-# GAE環境では/tmp/、ローカル環境ではtmp/ を使うようにパスを切り替え
+# 一時ファイル保存パス設定
+# GAE環境: /tmp、ローカル環境: tmp
 TMP_PATH = "/tmp" if IS_GAE else "tmp"
 
+# =============================================================================
+# Flaskアプリケーション設定
+# =============================================================================
 app = Flask(__name__)
 
-# --- Flaskおよびセッションの設定 ---
+# セッション設定
 app.secret_key="20041007"
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 app.config["SESSION_FILE_DIR"] = os.path.join(TMP_PATH, "flask_session")
 
-# --- ストレージ設定 ---
+# =============================================================================
+# ストレージ設定
+# =============================================================================
 if IS_GAE:
-    # GAE環境の場合：GCSクライアントを初期化
+    # GAE環境: Google Cloud Storage設定
     storage_client = storage.Client()
     CLOUD_STORAGE_BUCKET = os.getenv("CLOUD_STORAGE_BUCKET")
     bucket = storage_client.bucket(CLOUD_STORAGE_BUCKET)
 else:
-    # ローカル環境の場合：ローカルフォルダを設定
+    # ローカル環境: ローカルディレクトリ設定
     app.config["UPLOAD_FOLDER"] = os.path.join(TMP_PATH, "uploads")
     app.config["EDITED_FOLDER"] = os.path.join(TMP_PATH, "edited")
-    # 必要なローカルフォルダを起動時に作成
+    
+    # 必要なディレクトリを作成
     for folder in [app.config["UPLOAD_FOLDER"], app.config["EDITED_FOLDER"], app.config["SESSION_FILE_DIR"]]:
         if not os.path.exists(folder):
             os.makedirs(folder, exist_ok=True)
 
 Session(app)
 
-# --- ヘルパー関数 (コードの冗長性を減らすため) ---
+# =============================================================================
+# ヘルパー関数
+# =============================================================================
 
 def get_file_bytes(file_info):
     """ファイル情報を元に、GCSまたはローカルからファイルのバイトデータを取得する"""
@@ -75,7 +86,9 @@ def delete_file(file_info):
         if os.path.exists(file_info["storedfile_path"]):
             os.remove(file_info["storedfile_path"])
 
-# --- Flask ルート ---
+# =============================================================================
+# Flaskルート
+# =============================================================================
 
 @app.route("/")
 def index():
@@ -86,6 +99,8 @@ def index():
 
 @app.route("/upload", methods=["POST"])
 def upload_file():
+    if IS_GAE:
+        return "GAE環境ではこのルートは使えません"
     files = request.files.getlist("file")
     if "files_info" not in session:
         session["files_info"] = []
@@ -99,15 +114,11 @@ def upload_file():
         storedfile_name = str(uuid.uuid4()) + "_" + file.filename
         file_data = {"file_id": uuid.uuid4(), "file_name": file.filename, "storedfile_name": storedfile_name}
 
-        if IS_GAE:
-            # GCSにアップロード
-            blob = bucket.blob(storedfile_name)
-            blob.upload_from_file(file, content_type=file.content_type)
-        else:
-            # ローカルに保存
-            storedfile_path = os.path.join(app.config["UPLOAD_FOLDER"], storedfile_name)
-            file.save(storedfile_path)
-            file_data["storedfile_path"] = storedfile_path
+
+        # ローカル環境: ローカルファイルに保存
+        storedfile_path = os.path.join(app.config["UPLOAD_FOLDER"], storedfile_name)
+        file.save(storedfile_path)
+        file_data["storedfile_path"] = storedfile_path
         
         files_info.append(file_data)
         
@@ -129,7 +140,7 @@ def gen_signed_url():
         
         storedfile_name = str(uuid.uuid4()) + "_" + file_name
         file_data = {
-            "file_id": str(uuid.uuid4()),
+            "file_id": uuid.uuid4(),
             "file_name": file_name,
             "storedfile_name": storedfile_name,
             "uploaded": False  # アップロード完了フラグ
@@ -169,24 +180,16 @@ def confirm_upload():
     session["files_info"] = files_info
     return {"status": "success"}
 
-@app.route("/clear")
-def clear():
-    if "files_info" in session:
-        for item in session["files_info"]:
-            delete_file(item)
-        session["files_info"] = []
-    return redirect(url_for("index"))
-
 @app.route("/combine")
 def combine():
     if "files_info" not in session or not session["files_info"]:
         return "No files to combine.", 400
 
-    # booklet.pyがファイルパスではなくメモリオブジェクトを扱えるように
-    # 各ファイルのバイトデータをリストとして渡す
+    # 各ファイルのバイトデータをメモリストリームとして取得
+    # booklet.pyがファイルパスではなくメモリオブジェクトを扱えるように対応
     input_files_streams = [BytesIO(get_file_bytes(item)) for item in session["files_info"]]
     
-    # 出力ファイルは一時的にローカル（GAEなら/tmp）に保存
+    # 出力ファイルを一時的にローカル（GAE環境では/tmp）に保存
     output_path = os.path.join(TMP_PATH, "combine.pdf")
 
     unnumbering_page_str = request.args.get("no-number-pages")
@@ -235,7 +238,7 @@ def combine_by_song():
     if not data:
         return "Invalid JSON data", 400
 
-    # 最初に全PDFを結合して、メモリ上に一つのPDFオブジェクトとして保持
+    # 全PDFを結合してメモリ上に一つのPDFオブジェクトとして保持
     combined_pdf = PdfWriter()
     for file_info in session.get("files_info", []):
         pdf_bytes = get_file_bytes(file_info)
@@ -243,7 +246,7 @@ def combine_by_song():
         for page in reader.pages:
             combined_pdf.add_page(page)
     
-    # 曲ごとに分割・加工処理
+    # 曲ごとに分割・加工処理を実行
     filename_list = []
     names_and_ranges_info = data.get("songs", [])
     initial_number = int(data.get("initial_number", 1))
@@ -252,17 +255,18 @@ def combine_by_song():
     converted_prefix = prefix_pairing.get(data.get("prefix"), "")
 
     for info in names_and_ranges_info:
-        # ... (既存のロジックはほぼ同じ)
+        # 曲番号、曲名、ページ範囲を取得
         number = info["number"]
         name = info["name"]
         start_page = int(info["start"]) - initial_number
         end_page = int(info["end"]) - initial_number
 
+        # 指定範囲のページを抽出してB5サイズに変換
         tmp_writer = PdfWriter()
         for i in range(start_page, end_page + 1):
             if 0 <= i < len(combined_pdf.pages):
                 page = combined_pdf.pages[i]
-                page = convert_to_B5(page) # この関数はページオブジェクトを直接操作
+                page = convert_to_B5(page)  # ページオブジェクトを直接操作
                 tmp_writer.add_page(page)
         
         # 加工したPDFを一時フォルダに保存
@@ -272,7 +276,7 @@ def combine_by_song():
         with open(output_path, "wb") as f:
             tmp_writer.write(f)
 
-    # ZIPファイルを作成してダウンロード
+    # ZIPファイルを作成してダウンロード用に準備
     zip_filename = f"{converted_prefix}song_pdfs.zip"
     zip_output_path = os.path.join(TMP_PATH, zip_filename)
 
@@ -280,16 +284,23 @@ def combine_by_song():
         for filename in filename_list:
             path = os.path.join(TMP_PATH, filename)
             zf.write(path, arcname=filename)
-            os.remove(path) # ZIPに追加後、一時ファイルを削除
+            os.remove(path)  # ZIPに追加後、一時ファイルを削除
 
     session["ZIP_FILENAME"] = zip_filename
     session["ZIP_OUTPUT_PATH"] = zip_output_path
     return redirect(url_for("zip_download"))
 
+# =============================================================================
+# その他のルート（削除、ダウンロード、順序変更）
+# =============================================================================
 
-# 他のルート（/zip_download, /update_file_order, /delete）は、
-# ファイルパスに依存していないため、基本的には修正不要です。
-# ただし、/deleteはファイルの実体を削除する必要があるため修正します。
+@app.route("/clear")
+def clear():
+    if "files_info" in session:
+        for item in session["files_info"]:
+            delete_file(item)
+        session["files_info"] = []
+    return redirect(url_for("index"))
 
 @app.route("/delete")
 def delete():
@@ -298,12 +309,12 @@ def delete():
     
     files_info = session["files_info"]
     
-    # 削除対象をファイル名で特定（この部分は元のロジックを維持）
-    # 注：同じファイル名が複数あった場合、すべて削除される
+    # 削除対象をファイル名で特定
+    # 注意: 同じファイル名が複数ある場合、すべて削除される
     files_to_keep = []
     for item in files_info:
         if item["file_name"] == "バビロン.pdf":
-            delete_file(item) # GCS/ローカルからファイルを削除
+            delete_file(item)  # GCS/ローカルからファイルを削除
         else:
             files_to_keep.append(item)
             
@@ -330,13 +341,14 @@ def update_file_order():
     files_info = session.get("files_info", [])
     order = request.json.get("order", [])
     
+    # ファイル名をキーとしたマップを作成
     map_by_name = {item["file_name"]: item for item in files_info}
     
     # 順番データに存在するファイルのみで新しいリストを作成
     files_info_new = [map_by_name[name] for name in order if name in map_by_name]
     
     session["files_info"] = files_info_new
-    # このルートは画面遷移を伴わないので、redirectではなく成功応答を返す
+    # 画面遷移を伴わないのでリダイレクトではなく成功応答を返す
     return {"status": "success"}, 200
 
 
