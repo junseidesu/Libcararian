@@ -140,7 +140,7 @@ def gen_signed_url():
         
         storedfile_name = str(uuid.uuid4()) + "_" + file_name
         file_data = {
-            "file_id": uuid.uuid4(),
+            "file_id": str(uuid.uuid4()),
             "file_name": file_name,
             "storedfile_name": storedfile_name,
             "uploaded": False  # アップロード完了フラグ
