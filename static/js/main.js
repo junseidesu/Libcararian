@@ -1,6 +1,6 @@
 function AutoUpload(){
-    const fileInput=document.querySelector('input[type="file"][name="file"]')
-    const form=document.querySelector('form[id="upload"]')
+    const fileInput=document.querySelector('input[type="file"][name="file"]');
+    const form=document.querySelector('form[id="upload"]');
     const loadingIndicator = document.getElementById('loading-indicator');
 
     fileInput.addEventListener('change',async function(){
@@ -51,14 +51,17 @@ function AutoUpload(){
                     });
                     await Promise.all(urlPromises);
                     window.location.reload();
-                }catch(error){
+                } catch(error) {
                     alert(`エラー発生：${error.message}`);
                     loadingIndicator.style.display = 'none';
                 }
-            }else{
+            } else {
                 form.submit();
             }
-            
+            const setupButton = document.getElementById('setupButton');
+            if (setupButton) {
+                setupButton.click();
+            }
         }
     });
     setupFileListSortable();
