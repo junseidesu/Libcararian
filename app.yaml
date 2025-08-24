@@ -18,7 +18,7 @@ handlers:
   script: auto
 
 env_variables:
-  CLOUD_STORAGE_BUCKET: "libcararian_storage"  # GAEで使用するCloud Storageのバケット名を指定します。
+  CLOUD_STORAGE_BUCKET: "libcararian_storage2"  # GAEで使用するCloud Storageのバケット名を指定します。
 
 # インスタンスのスケーリング設定を定義します。
 # これらはデフォルト値であり、必要に応じて調整できます。
