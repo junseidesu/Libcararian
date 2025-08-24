@@ -65,7 +65,7 @@ function AutoUpload(){
 }
 
 function setupSortButton() {
-    const sortButton = document.getElementById('sort-by-name-asc');
+    const sortButton = document.getElementById('sortButton');
     if (sortButton) {
         sortButton.addEventListener('click', async () => {
             const fileList = document.getElementById('file-list');
@@ -295,7 +295,6 @@ function setupCombineBySong(){
     });
 }
 
-// New function for drag and drop
 function setupDragAndDrop() {
     const uploadArea = document.querySelector('.upload-area');
     const fileInput = document.querySelector('input[type="file"][name="file"]');
@@ -367,5 +366,5 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDragAndDrop();
     setupFileListSortable(); // ファイルリストのソート機能をセットアップ
     setupSortButton(); // ソートボタンのセットアップ
-    
+
 });
