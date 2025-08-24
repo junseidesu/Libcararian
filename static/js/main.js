@@ -64,6 +64,53 @@ function AutoUpload(){
     setupFileListSortable();
 }
 
+function setupSortButton() {
+    const sortButton = document.getElementById('sort-by-name-asc');
+    if (sortButton) {
+        sortButton.addEventListener('click', async () => {
+            const fileList = document.getElementById('file-list');
+            const items = Array.from(fileList.children);
+
+            // ファイル名でソート
+            items.sort((a, b) => {
+                const nameA = a.dataset.fileName.toUpperCase(); // 大文字小文字を区別しない
+                const nameB = b.dataset.fileName.toUpperCase();
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+                return 0;
+            });
+
+            const orderedFiles = items.map(li => li.dataset.fileName);
+
+            // サーバーに新しい順番を送信
+            try {
+                const response = await fetch('/update_file_order', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ order: orderedFiles })
+                });
+
+                if (response.ok) {
+                    // 成功したらページをリロードして表示を更新
+                    window.location.reload();
+                } else {
+                    console.error('Failed to update file order on the server.');
+                    alert('ファイルの並び替えに失敗しました。');
+                }
+            } catch (error) {
+                console.error('Error sending file order to the server:', error);
+                alert('エラーが発生しました。');
+            }
+        });
+    }
+}
+
 // Global variables for PDF preview
 let currentPdf = null;
 let currentPageNum = 0; // 0-indexed page number
@@ -319,4 +366,6 @@ document.addEventListener('DOMContentLoaded', function() {
     setupCombineBySong(); // ここで呼び出す
     setupDragAndDrop();
     setupFileListSortable(); // ファイルリストのソート機能をセットアップ
+    setupSortButton(); // ソートボタンのセットアップ
+    
 });
