@@ -7,8 +7,9 @@ from flask_session import Session
 from booklet import change_to_booklet, convert_to_B5
 import zipfile
 from dotenv import load_dotenv
-from google.cloud import storage
 import datetime
+import google.auth
+from google.cloud import storage
 
 # =============================================================================
 # 環境設定
@@ -39,7 +40,9 @@ app.config["SESSION_FILE_DIR"] = os.path.join(TMP_PATH, "flask_session")
 # =============================================================================
 if IS_GAE:
     # GAE環境: Google Cloud Storage設定
-    storage_client = storage.Client()
+
+    credentials, project = google.auth.default()
+    storage_client = storage.Client(credentials=credentials)
     CLOUD_STORAGE_BUCKET = os.getenv("CLOUD_STORAGE_BUCKET")
     bucket = storage_client.bucket(CLOUD_STORAGE_BUCKET)
 else:
