@@ -1,6 +1,8 @@
 from pypdf import *
-import fitz
 import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import mm
+from reportlab.lib.pagesizes import B5
 
 #サイズ定義
 B4_size=(1031.8,728.5)
@@ -53,64 +55,44 @@ def change_to_booklet(
 
 
     if isNumbering:
-        temp_file_stream=io.BytesIO()
-        writer.write(temp_file_stream)
-        temp_file_stream.seek(0)
-
-        no_number_conbined=fitz.open("pdf", temp_file_stream)
-
-
-
-
-        for i in range(0,num_pages):
-            if i<unnumbering_page:
+        numbered_writer = PdfWriter()
+        # writerの各ページにページ番号を追加
+        for i, page in enumerate(writer.pages):
+            if i < unnumbering_page:
+                numbered_writer.add_page(page)
                 continue
-            else:
-                no_number_page=no_number_conbined.load_page(i)
-                no_number_page_width=B5_size[0]
-                no_number_page_height=B5_size[1]
 
+            packet = io.BytesIO()
+            # reportlabで新しいPDF（キャンバス）を作成
+            can = canvas.Canvas(packet, pagesize=B5)
 
+            page_width, page_height = B5 # B5サイズをptで取得
 
-                if i%2==0:
-                    x0=no_number_page_width-margin_x-box_width+10
-                    y0=no_number_page_height-(margin_y+box_height)
-                    x1=no_number_page_width-margin_x+10
-                    y1=no_number_page_height-margin_y
+            page_number_text = str(i + start_page - unnumbering_page)
 
-                    text_rect=fitz.Rect(x0,y0,x1,y1)
+            # ページ番号の位置を左右で変える
+            if i % 2 == 0:  # 右ページ
+                x = page_width - (margin_x * 2.83) - (box_width * 2.83) + 10
+                can.drawString(x, margin_y * 2.83, page_number_text)
+            else:  # 左ページ
+                x = margin_x * 2.83
+                can.drawString(x, margin_y * 2.83, page_number_text)
+            
+            can.save()
 
-                    no_number_page.insert_textbox(
-                        text_rect,
-                        str(i+start_page-unnumbering_page),
-                        fontsize=12,
-                        align="right",
-                        fontname="helv"
-                    )
+            # packetの先頭にシーク
+            packet.seek(0)
+            
+            # ページ番号が書かれたPDFを読み込む
+            number_pdf = PdfReader(packet)
+            number_page = number_pdf.pages[0]
 
-                else:
-                    x0=margin_x
-                    y0=no_number_page_height-(margin_y+box_height)
-                    x1=margin_x+box_width
-                    y1=no_number_page_height-margin_y
+            # 元のページにページ番号のページを重ねる
+            page.merge_page(number_page)
+            numbered_writer.add_page(page)
 
-                    text_rect=fitz.Rect(x0,y0,x1,y1)
-
-                    no_number_page.insert_textbox(
-                        text_rect,
-                        str(i+start_page-unnumbering_page),
-                        fontsize=12,
-                        align="left",
-                        fontname="helv"
-                    )
-
-
-        numbered_conbined_bytes=no_number_conbined.tobytes()
-        no_number_conbined.close()
-
-        numbered_writer=PdfWriter(io.BytesIO(numbered_conbined_bytes))
     else:
-        numbered_writer=writer
+        numbered_writer = writer
     #小冊子に出来るように4の倍数ページになるまで白紙のページを追加
     if num_pages%4==0:
         pass
