@@ -149,10 +149,6 @@ def gen_signed_url():
             "storedfile_name": storedfile_name,
             "uploaded": False  # アップロード完了フラグ
         }
-        print(file_data)
-        if "files_info" not in session:
-            session["files_info"] = []
-        session["files_info"].append(file_data)
             
         blob = bucket.blob(storedfile_name)
         signed_url = blob.generate_signed_url(
@@ -166,24 +162,28 @@ def gen_signed_url():
 
         return {
             "signed_url": signed_url,
-            "file_id": file_data["file_id"]
+            "file_data": file_data
         }
     
 @app.route("/confirm_upload", methods=["POST"])
 def confirm_upload():
     """クライアントからアップロード完了通知を受け取る"""
     data = request.get_json()
-    file_id = data.get("file_id")
+    file_data = data.get("file_data")
+
+    if not file_data:
+        return jsonify({"status": "error", "message": "ファイルデータがありません"}), 400
+
+    if "files_info" not in session:
+        session["files_info"] = []
     
-    # セッション内のファイル情報を更新
-    files_info = session.get("files_info", [])
-    for file_info in files_info:
-        if file_info["file_id"] == file_id:
-            file_info["uploaded"] = True
-            break
+    # ここで初めてセッションにファイル情報を追加する
+    session["files_info"].append(file_data)
     
-    session["files_info"] = files_info
-    return {"status": "success"}
+    # セッションの変更を保存
+    session.modified = True 
+    
+    return jsonify({"status": "success"})
 
 @app.route("/combine")
 def combine():

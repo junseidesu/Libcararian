@@ -45,7 +45,7 @@ function AutoUpload(){
                                 "Content-Type": "application/json"
                             },
                             body: JSON.stringify({
-                                file_id: response.file_id
+                                file_data: responseData.file_data
                             })
                         });
                     });
