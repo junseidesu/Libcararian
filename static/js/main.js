@@ -24,7 +24,7 @@ function AutoUpload(){
                         });
                         console.log(urlResponse);
                         if(!urlResponse.ok){
-                            alert(`URLの取得に失敗：${file.name}ほんま？`);
+                            alert(`URLの取得に失敗：${file.name}${urlResponse.statusText}ほんま？`);
                             console.error(`URL取得エラー：${urlResponse.statusText}`);
                             continue;
                         }
