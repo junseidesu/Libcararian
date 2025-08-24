@@ -11,8 +11,8 @@ function AutoUpload(){
             if(IS_GAE){
                 const fileDataList=Array.from(fileInput.files)
                 try{
-                    for(const file of fileDataList){
-                        const urlResponse=await fetch("/generate_signed_url", {
+                    const urlPromises = fileDataList.map(async(file) => {
+                        const urlResponse = await fetch("/generate_signed_url", {
                             method: 'POST',
                             headers:{
                                 'Content-Type': 'application/json'
@@ -22,23 +22,21 @@ function AutoUpload(){
                                 file_type:file.type
                             })
                         });
-                        console.log(urlResponse);
                         if(!urlResponse.ok){
-                            alert(`URLの取得に失敗：${file.name}${urlResponse.statusText}ほんま？`);
-                            console.error(`URL取得エラー：${urlResponse.statusText}`);
-                            continue;
+                            console.error(`URL取得エラー：${file.name}`);
+                            throw new Error(`URL取得エラー：${file.name}`);
                         }
-                        const response=await urlResponse.json();
-                        const uploadResponse=await fetch(response.signed_url, {
+                        const responseData = await urlResponse.json();
+                        const uploadResponse=await fetch(responseData.signed_url, {
                             method: 'PUT',
                             headers: {
                                 'Content-Type': file.type,
                             },
-                            body:file
+                            body: file
                         });
                         if(!uploadResponse.ok){
-                            alert(`ファイルのアップロードに失敗：${file.name}`);
-                            continue;
+                            console.error(`アップロードエラー：${file.name}`);
+                            throw new Error(`アップロードエラー：${file.name}`);
                         }
 
                         await fetch("/confirm_upload", {
@@ -50,10 +48,12 @@ function AutoUpload(){
                                 file_id: response.file_id
                             })
                         });
-                    }
+                    });
+                    await Promise.all(urlPromises);
                     window.location.reload();
                 }catch(error){
                     alert(`エラー発生：${error.message}`);
+                    loadingIndicator.style.display = 'none';
                 }
             }else{
                 form.submit();
