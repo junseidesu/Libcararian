@@ -348,7 +348,7 @@ def update_file_order():
     files_info_new = [map_by_name[name] for name in order if name in map_by_name]
     
     session["files_info"] = files_info_new
-    # 画面遷移を伴わないのでリダイレクトではなく成功応答を返す
+    # 画面遷移を伴わないのでリダイレクトではなく成功応答を返
     return {"status": "success"}, 200
 
 
