@@ -42,6 +42,7 @@ if IS_GAE:
     # GAE環境: Google Cloud Storage設定
 
     credentials, project = google.auth.default()
+    credentials.refresh(google.auth.transport.requests.Request()) 
     storage_client = storage.Client(credentials=credentials)
     CLOUD_STORAGE_BUCKET = os.getenv("CLOUD_STORAGE_BUCKET")
     bucket = storage_client.bucket(CLOUD_STORAGE_BUCKET)
@@ -159,7 +160,8 @@ def gen_signed_url():
             expiration=datetime.timedelta(minutes=15),
             method="PUT",
             content_type=file_type,
-            service_account_email=os.getenv("GAE_SERVICE_ACCOUNT_EMAIL", "libcararian@appspot.gserviceaccount.com")
+            service_account_email=credentials.service_account_email,
+            access_token=credentials.token
         )
 
         return {
