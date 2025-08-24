@@ -10,7 +10,7 @@ B5_size=(515.9,728.5)
 
 #1pt=0.35mm
 margin_x=15
-margin_y=5
+margin_y=10
 box_width=30
 box_height=25
 
@@ -72,11 +72,11 @@ def change_to_booklet(
 
             # ページ番号の位置を左右で変える
             if i % 2 == 0:  # 右ページ
-                x = page_width - (margin_x * 2.83) - (box_width * 2.83) + 10
-                can.drawString(x, margin_y * 2.83, page_number_text)
+                x = page_width - margin_x+3
+                can.drawString(x, margin_y, page_number_text)
             else:  # 左ページ
-                x = margin_x * 2.83
-                can.drawString(x, margin_y * 2.83, page_number_text)
+                x = margin_x
+                can.drawString(x, margin_y, page_number_text)
             
             can.save()
 
