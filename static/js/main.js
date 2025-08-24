@@ -58,13 +58,14 @@ function AutoUpload(){
             } else {
                 form.submit();
             }
-            const setupButton = document.getElementById('setupButton');
-            if (setupButton) {
-                setupButton.click();
-            }
+            
         }
     });
     setupFileListSortable();
+    const setupButton = document.getElementById('setupButton');
+    if (setupButton) {
+        setupButton.click();
+    }
 }
 
 function setupSortButton() {
