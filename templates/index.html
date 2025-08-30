@@ -29,7 +29,7 @@
                 </form>
                 <button type="button" id="sortButton">ファイル名ソート</button>
             </div>
-            <p>読み込みファイル</p>
+            <h3>📁 読み込みファイル</h3>
             {% if file_names %}
                 <ul id="file-list">
                 {% for file_name in file_names %}
@@ -40,11 +40,11 @@
         </div>
 
         <div class="container-item" id="preview-panel">
-            <p>プレビューエリア</p>
+            <h3>📄 プレビューエリア</h3>
             <div class="pdf-navigation">
-                <button id="prevPage" disabled>前へ</button>
+                <button id="prevPage" disabled>← 前へ</button>
                 <span id="pageNumberDisplay"></span>
-                <button id="nextPage" disabled>次へ</button>
+                <button id="nextPage" disabled>次へ →</button>
             </div>
             <canvas id="preview-canvas" width="90" height="90"></canvas>
         </div>
@@ -55,7 +55,7 @@
                 <form action="/combine" method="get">
                     
                     <label>ファイル名：
-                        <input type="text" name="output-filename" placeholder="例：合唱曲集" maxlength="50">
+                        <input type="text" name="output-filename" placeholder="例：混声結合ファイル" maxlength="50">
                     </label><br>
 
                     <label>
