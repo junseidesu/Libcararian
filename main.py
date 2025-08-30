@@ -199,9 +199,16 @@ def combine():
 
     unnumbering_page_str = request.args.get("no-number-pages")
     start_page_str = request.args.get("start-number")
+    output_filename = request.args.get("output-filename")
 
     unnumbering_page = int(unnumbering_page_str) if unnumbering_page_str else 0
     start_page = int(start_page_str) if start_page_str else 1
+    
+    # ファイル名の処理（入力がない場合はデフォルト名を使用）
+    if output_filename and output_filename.strip():
+        download_name = f"{output_filename.strip()}.pdf"
+    else:
+        download_name = "結合ファイル.pdf"
 
     change_to_booklet(
         input_files=input_files_streams,
@@ -217,7 +224,7 @@ def combine():
         output_path,
         as_attachment=True,
         mimetype="application/pdf",
-        download_name="結合ファイル.pdf"
+        download_name=download_name
     )
 
 @app.route("/preview/<filename>")

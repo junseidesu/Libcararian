@@ -52,6 +52,13 @@ input[type="number"] {
     transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
+/* ファイル名入力欄のスタイル調整 */
+input[name="output-filename"] {
+    width: 100%;
+    max-width: 200px;
+    margin-bottom: 10px;
+}
+
 /* ホバー時に少し枠線を濃くする */
 input[type="text"]:hover,
 input[type="number"]:hover {
