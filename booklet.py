@@ -16,11 +16,7 @@ box_height=25
 
 def convert_to_B5(page):
     page.transfer_rotation_to_content()
-    page_width=page.mediabox.width
-    page_height=page.mediabox.height
-    sx=B5_size[0]/page_width
-    sy=B5_size[1]/page_height
-    page.scale(sx=sx, sy=sy)
+    page.scale_to(B5_size[0], B5_size[1])
     return page
 
 def change_to_booklet(
