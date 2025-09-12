@@ -21,9 +21,6 @@
                 <div id="loading-indicator" style="display: none;"><p>アップロード中です...</p></div>
             </div>
             <div id="list-operation">
-                <form action="/delete" method="get">
-                    <button type="submit">削除</button>
-                </form>
                 <form action="/clear" method="get">
                     <button>クリア</button>
                 </form>
@@ -33,7 +30,10 @@
             {% if file_names %}
                 <ul id="file-list">
                 {% for file_name in file_names %}
-                    <li data-file-name="{{ file_name }}"><p>{{ file_name }}</p></li>
+                    <li data-file-name="{{ file_name }}">
+                        <span class="file-name">{{ file_name }}</span>
+                        <button class="delete-file-btn" data-file-name="{{ file_name }}">×</button>
+                    </li>
                 {% endfor %}
                 </ul>
             {% endif %}
@@ -74,10 +74,11 @@
                     <input type="submit" value="一括結合">
                 </form>
             </div>
+            
             <button id="openButton">曲ごとに結合</button>
             <dialog id="myDialog">
                 <div id="gapArea">
-                    <div>placeholder="例：1"
+                    <div>
                         <div class="prefix-panel">
                             <select id="prefix" name="prefix">
                                 <option value="nothing">-</option>
@@ -104,9 +105,10 @@
                                 <button type="button" class="delete-range-btn">x</button>
                             </div>
                         </div>
-                        <button type="button" id="closeButton">閉じる</button>
-                        <button type="button" id="combineBySong">曲ごとに結合</button>
+                        
                     </div>
+                    <button type="button" id="combineBySong">曲ごとに結合</button>
+                    <button type="button" id="closeButton">閉じる</button>
                     <template id="range-template">
                         <div class="range-item">
                             <button type="button" class="add-range-btn">+</button>

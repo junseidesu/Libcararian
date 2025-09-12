@@ -418,7 +418,29 @@ function setupFileListSortable() {
     });
 }
 
-
+function setupDeleteButtons() {
+    document.querySelectorAll('.delete-file-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const fileName = this.dataset.fileName;
+            if (!confirm(`${fileName} を削除しますか？`)) return;
+            
+            try {
+                const response = await fetch(`/delete_file?file_name=${encodeURIComponent(fileName)}`, {
+                    method: 'GET'
+                });
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('削除に失敗しました');
+                }
+            } catch (error) {
+                console.error('削除エラー:', error);
+                alert('削除中にエラーが発生しました');
+            }
+        });
+    });
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     AutoUpload();
@@ -429,5 +451,20 @@ document.addEventListener('DOMContentLoaded', function() {
     setupDragAndDrop();
     setupFileListSortable(); // ファイルリストのソート機能をセットアップ
     setupSortButton(); // ソートボタンのセットアップ
+    setupDeleteButtons(); // 個別削除ボタンのセットアップ
+    setupClearButton(); // クリアボタンのセットアップ
 
 });
+
+function setupClearButton() {
+    const clearForm = document.querySelector('form[action="/clear"]');
+    if (clearForm) {
+        clearForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            if (confirm('すべてのファイルを削除しますか？')) {
+                this.submit();
+            }
+        });
+    }
+}
+

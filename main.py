@@ -333,6 +333,28 @@ def delete():
     session["files_info"] = files_to_keep
     return redirect(url_for("index"))
 
+@app.route("/delete_file")
+def delete_file_api():
+    """個別ファイル削除API"""
+    file_name = request.args.get("file_name")
+    if not file_name or "files_info" not in session:
+        return "ファイル名が指定されていません", 400
+
+    files_info = session["files_info"]
+    files_to_keep = []
+    deleted = False
+    
+    for item in files_info:
+        if item["file_name"] == file_name and not deleted:
+            delete_file(item)  # GCS/ローカルからファイルを削除
+            deleted = True
+        else:
+            files_to_keep.append(item)
+    
+    session["files_info"] = files_to_keep
+    session.modified = True
+    return "OK", 200
+
 
 @app.route("/zip_download")
 def zip_download():

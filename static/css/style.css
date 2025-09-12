@@ -73,6 +73,22 @@ input[type="number"]{
     border-radius: 4px;
 }
 
+#openButton {
+    width: auto;
+    min-width: 120px;
+    max-width: 300px;
+    display: inline-block;
+    margin: 0 auto;
+}
+
+#combineBySong {
+    margin: 20px;
+    font-weight:bold;
+}
+#closeButton {
+    margin: 20px;
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
