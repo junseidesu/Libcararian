@@ -32,12 +32,51 @@ li{
     list-style-type: none;
     border-bottom: 1px solid #eee;
     transition: all 0.2s ease-out;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
 }
 
 li:hover{
     background-color: #f1f3f5;
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.file-name {
+    flex: 1;
+    text-align: left;
+}
+
+.delete-file-btn {
+    background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 4px rgba(255, 107, 107, 0.3);
+    position: relative;
+    flex-shrink: 0;
+    order: -1;
+}
+
+.delete-file-btn:hover {
+    background: linear-gradient(135deg, #ff5252, #e53935);
+    transform: scale(1.15);
+    box-shadow: 0 2px 6px rgba(255, 107, 107, 0.5);
+}
+
+.delete-file-btn:active {
+    transform: scale(0.95);
 }
 
 /* Text and Number Inputs */
