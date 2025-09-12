@@ -92,11 +92,7 @@ def change_to_booklet(
     else:
         numbered_writer = writer
     #小冊子に出来るように4の倍数ページになるまで白紙のページを追加
-    if num_pages%4==0:
-        pass
-    else:
-        while len(numbered_writer.pages)%4!=0:
-            numbered_writer.add_blank_page(width=B5_size[0],height=B5_size[1])
+    
             
             
     #並べ替えの順番を作成
@@ -104,6 +100,12 @@ def change_to_booklet(
     booklet_pages=len(numbered_writer.pages)
 
     if isBooklet:
+        if num_pages%4==0:
+            pass
+        else:
+            while len(numbered_writer.pages)%4!=0:
+                numbered_writer.add_blank_page(width=B5_size[0],height=B5_size[1])
+                
         for i in range(0,booklet_pages//2,2):
             booklet_order.append((booklet_pages-1-i,i))
             booklet_order.append((i+1,booklet_pages-1-(i+1)))
