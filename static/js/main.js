@@ -327,16 +327,75 @@ function setupDragAndDrop() {
     // Handle dropped files
     uploadArea.addEventListener('drop', handleDrop, false);
 
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
 
-        // Assign the dropped files to the file input
-        fileInput.files = files;
+            // GAE環境かどうか判定
+            if (typeof IS_GAE !== "undefined" && IS_GAE) {
+                // GAE: fetchでアップロード
+                const loadingIndicator = document.getElementById('loading-indicator');
+                loadingIndicator.style.display = 'block';
 
-        // Programmatically submit the form
-        uploadForm.submit();
-    }
+                const fileDataList = Array.from(files);
+                const urlPromises = fileDataList.map(async (file) => {
+                    const urlResponse = await fetch("/generate_signed_url", {
+                        method: 'POST',
+                        headers:{
+                            'Content-Type': 'application/json'
+                        },
+                        body:JSON.stringify({
+                            file_name:file.name,
+                            file_type:file.type
+                        })
+                    });
+                    if(!urlResponse.ok){
+                        console.error(`URL取得エラー：${file.name}`);
+                        throw new Error(`URL取得エラー：${file.name}`);
+                    }
+                    const responseData = await urlResponse.json();
+                    const uploadResponse=await fetch(responseData.signed_url, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': file.type,
+                        },
+                        body: file
+                    });
+                    if(!uploadResponse.ok){
+                        console.error(`アップロードエラー：${file.name}`);
+                        throw new Error(`アップロードエラー：${file.name}`);
+                    }
+
+                    await fetch("/confirm_upload", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            file_data: responseData.file_data
+                        })
+                    });
+                });
+                Promise.all(urlPromises).then(() => {
+                    window.location.reload();
+                }).catch(error => {
+                    alert(`エラー発生：${error.message}`);
+                    loadingIndicator.style.display = 'none';
+                });
+            } else {
+                // ローカル: FormDataで送信
+                const formData = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('file', files[i]);
+                }
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        }
 }
 
 function setupFileListSortable() {
