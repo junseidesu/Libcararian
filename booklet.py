@@ -97,7 +97,6 @@ def change_to_booklet(
             
     #並べ替えの順番を作成
     booklet_order=[]
-    booklet_pages=len(numbered_writer.pages)
 
     if isBooklet:
         if num_pages%4==0:
@@ -105,6 +104,9 @@ def change_to_booklet(
         else:
             while len(numbered_writer.pages)%4!=0:
                 numbered_writer.add_blank_page(width=B5_size[0],height=B5_size[1])
+        
+        # 白紙ページ追加後の正確なページ数を取得
+        booklet_pages=len(numbered_writer.pages)
                 
         for i in range(0,booklet_pages//2,2):
             booklet_order.append((booklet_pages-1-i,i))
