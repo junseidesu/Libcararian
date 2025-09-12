@@ -226,6 +226,34 @@ def combine():
         mimetype="application/pdf",
         download_name=download_name
     )
+    start_page_str = request.args.get("start-number")
+    output_filename = request.args.get("output-filename")
+
+    unnumbering_page = int(unnumbering_page_str) if unnumbering_page_str else 0
+    start_page = int(start_page_str) if start_page_str else 1
+    
+    # ファイル名の処理（入力がない場合はデフォルト名を使用）
+    if output_filename and output_filename.strip():
+        download_name = f"{output_filename.strip()}.pdf"
+    else:
+        download_name = "結合ファイル.pdf"
+
+    change_to_booklet(
+        input_files=input_files_streams,
+        output_path=output_path,
+        center_gap_mm=20,
+        isNumbering=True if request.args.get("isNumbering") == "numbering" else False,
+        isBooklet=True if request.args.get("isBooklet") == "booklet" else False,
+        unnumbering_page=unnumbering_page,
+        start_page=start_page
+    )
+    
+    return send_file(
+        output_path,
+        as_attachment=True,
+        mimetype="application/pdf",
+        download_name=download_name
+    )
 
 @app.route("/preview/<filename>")
 def preview(filename):
