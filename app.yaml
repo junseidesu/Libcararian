@@ -19,6 +19,8 @@ handlers:
 
 timeout: 600s
 
+instance_class: F1
+
 env_variables:
   CLOUD_STORAGE_BUCKET: "libcararian_storage"  # GAEで使用するCloud Storageのバケット名を指定します。
 
