@@ -15,9 +15,21 @@ box_width=30
 box_height=25
 
 def convert_to_B5(page):
-    print(f"Before scaling: {page.mediabox.width} x {page.mediabox.height}")
-    page.transfer_rotation_to_content()
+    # 元のページの回転角度を取得
+    original_rotation = page.rotation
+
+    # ページの回転をリセット
+    if original_rotation != 0:
+        page.rotate(-original_rotation)
+
+    # ページをB5サイズにスケーリング
     page.scale_to(width=B5_size[0], height=B5_size[1])
+
+    # 必要であれば再度回転させる
+    # ただし、コンテンツに直接適用するわけではない
+    if original_rotation != 0:
+        page.rotate(original_rotation)
+        
     print(f"After scaling: {page.mediabox.width} x {page.mediabox.height}")
     return page
 
