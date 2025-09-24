@@ -28,4 +28,4 @@ automatic_scaling:
   target_cpu_utilization: 0.65 # CPU使用率がこの値を超えるとスケールアウトを検討します。
   target_throughput_utilization: 0.65 # スループットがこの値を超えるとスケールアウトを検討します。
   max_concurrent_requests: 80 # 各インスタンスが同時に処理できる最大リクエスト数です。
-
+  timeout: 600s
