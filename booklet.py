@@ -1,4 +1,5 @@
 from pypdf import *
+from pypdf.generic import NameObject, DictionaryObject
 import io
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
@@ -144,12 +145,29 @@ def change_to_booklet(
             booklet.add_blank_page(width=B4_size[0], height=B4_size[1])
 
             #左右に貼り付け
-            booklet.pages[current_booklet_page].merge_page(leftpage)
-            booklet.pages[current_booklet_page].merge_translated_page(
-                rightpage, 
-                tx=available_width_per_page + center_gap_pt,  # 左ページ幅 + 間隔
-                ty=0
-            )
+            try:
+                booklet.pages[current_booklet_page].merge_page(leftpage)
+                booklet.pages[current_booklet_page].merge_translated_page(
+                    rightpage, 
+                    tx=available_width_per_page + center_gap_pt,  # 左ページ幅 + 間隔
+                    ty=0
+                )
+            except Exception as merge_error:
+                print(f"Page merge error at page {current_booklet_page}: {merge_error}")
+                # フォールバック: ページをコピーして追加
+                try:
+                    # 新しい空白ページを作成し直す
+                    booklet.pages[current_booklet_page] = booklet.add_blank_page(width=B4_size[0], height=B4_size[1])
+                    # 簡単なコピーを試行
+                    for resource_type in ["/XObject", "/Font", "/ExtGState"]:
+                        if resource_type in leftpage.get("/Resources", {}):
+                            if "/Resources" not in booklet.pages[current_booklet_page]:
+                                booklet.pages[current_booklet_page][NameObject("/Resources")] = DictionaryObject()
+                            booklet.pages[current_booklet_page]["/Resources"][resource_type] = leftpage["/Resources"][resource_type]
+                except Exception as fallback_error:
+                    print(f"Fallback merge also failed: {fallback_error}")
+                    # 最終フォールバック: そのページをスキップ
+                    pass
             
             current_booklet_page+=1
     else:

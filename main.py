@@ -210,22 +210,25 @@ def combine():
     else:
         download_name = "結合ファイル.pdf"
 
-    change_to_booklet(
-        input_files=input_files_streams,
-        output_path=output_path,
-        center_gap_mm=20,
-        isNumbering=True if request.args.get("isNumbering") == "numbering" else False,
-        isBooklet=True if request.args.get("isBooklet") == "booklet" else False,
-        unnumbering_page=unnumbering_page,
-        start_page=start_page
-    )
-    
-    return send_file(
-        output_path,
-        as_attachment=True,
-        mimetype="application/pdf",
-        download_name=download_name
-    )
+    try:
+        change_to_booklet(
+            input_files=input_files_streams,
+            output_path=output_path,
+            center_gap_mm=20,
+            isNumbering=True if request.args.get("isNumbering") == "numbering" else False,
+            isBooklet=True if request.args.get("isBooklet") == "booklet" else False,
+            unnumbering_page=unnumbering_page,
+            start_page=start_page
+        )
+        
+        return send_file(
+            output_path,
+            as_attachment=True,
+            mimetype="application/pdf",
+            download_name=download_name
+        )
+    except Exception as e:
+        print(f"PDF processing error: {e}")
 
 @app.route("/preview/<filename>")
 def preview(filename):
