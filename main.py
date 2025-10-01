@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import datetime
 import google.auth
 from google.cloud import storage
+from google.cloud import tasks_v2
 import json
 import time
 
