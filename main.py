@@ -187,6 +187,7 @@ def confirm_upload():
 
 @app.route("/combine")
 def combine():
+    print(f"files_info in session: {session.get('files_info')}")
     if "files_info" not in session or not session["files_info"]:
         return "No files to combine.", 400
 
