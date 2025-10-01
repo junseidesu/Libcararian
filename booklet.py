@@ -130,6 +130,7 @@ def change_to_booklet(
         current_booklet_page=0
 
         # 各ページの配置可能幅を計算
+        #aaa
         available_width_per_page = (B4_size[0] - center_gap_pt) / 2
         scale_factor = available_width_per_page / B5_size[0]
 
