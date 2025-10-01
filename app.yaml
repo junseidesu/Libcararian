@@ -22,7 +22,10 @@ handlers:
 instance_class: F1
 
 env_variables:
-  CLOUD_STORAGE_BUCKET: "libcararian_storage"  # GAEで使用するCloud Storageのバケット名を指定します。
+  CLOUD_STORAGE_BUCKET: "libcararian_storage" 
+  CLOUD_TASKS_QUEUE: pdf-processing-queueaks
+  CLOUD_TASKS_LOCATION: asia-northeast1
+  CLOUD_TASKS_PROJECT: libcararian
 
 # インスタンスのスケーリング設定を定義します。
 # これらはデフォルト値であり、必要に応じて調整できます。

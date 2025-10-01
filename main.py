@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 import datetime
 import google.auth
 from google.cloud import storage
+from google.cloud import tasks_v2
+import json
+import time
 
 # =============================================================================
 # 環境設定
@@ -46,6 +49,13 @@ if IS_GAE:
     storage_client = storage.Client(credentials=credentials)
     CLOUD_STORAGE_BUCKET = os.getenv("CLOUD_STORAGE_BUCKET")
     bucket = storage_client.bucket(CLOUD_STORAGE_BUCKET)
+    
+    # Cloud Tasks設定
+    tasks_client = tasks_v2.CloudTasksClient(credentials=credentials)
+    PROJECT_ID = project
+    LOCATION = 'asia-northeast1'  # 東京リージョン
+    QUEUE_NAME = 'pdf-processing-queue'
+    parent = tasks_client.queue_path(PROJECT_ID, LOCATION, QUEUE_NAME)
 else:
     # ローカル環境: ローカルディレクトリ設定
     app.config["UPLOAD_FOLDER"] = os.path.join(TMP_PATH, "uploads")
@@ -89,6 +99,48 @@ def delete_file(file_info):
     else:
         if os.path.exists(file_info["storedfile_path"]):
             os.remove(file_info["storedfile_path"])
+
+def create_pdf_task(task_data):
+    """Cloud TasksにPDF処理タスクを作成"""
+    if not IS_GAE:
+        return None
+    
+    try:
+        # タスクの設定
+        task = {
+            'http_request': {
+                'http_method': tasks_v2.HttpMethod.POST,
+                'url': f'https://{PROJECT_ID}.appspot.com/process-pdf-task',
+                'headers': {'Content-Type': 'application/json'},
+                'body': json.dumps(task_data).encode('utf-8')
+            }
+        }
+        
+        # タスクをキューに追加
+        response = tasks_client.create_task(parent=parent, task=task)
+        print(f'Task created: {response.name}')
+        return response.name
+    except Exception as e:
+        print(f'Task creation error: {e}')
+        return None
+
+def store_processing_status(task_id, status, result_url=None):
+    """処理ステータスをGCSに保存"""
+    if not IS_GAE:
+        return
+    
+    try:
+        status_data = {
+            'status': status,
+            'timestamp': datetime.datetime.now().isoformat(),
+            'result_url': result_url
+        }
+        
+        blob = bucket.blob(f'processing_status/{task_id}.json')
+        blob.upload_from_string(json.dumps(status_data), content_type='application/json')
+        print(f'Status stored for task: {task_id}')
+    except Exception as e:
+        print(f'Status storage error: {e}')
 
 # =============================================================================
 # Flaskルート
@@ -240,6 +292,111 @@ def combine():
     except Exception as e:
         print(f"PDF processing error: {e}")
         return f"PDF処理中にエラーが発生しました: {str(e)}", 500
+
+@app.route("/process-pdf-task", methods=["POST"])
+def process_pdf_task():
+    """Cloud Tasksからのバックグラウンド処理リクエストを処理"""
+    try:
+        data = request.get_json()
+        task_id = data['task_id']
+        files_info = data['files_info']
+        parameters = data['parameters']
+        
+        print(f"Task {task_id}: PDF処理開始")
+        
+        # ファイルバイト取得
+        input_files_streams = []
+        for item in files_info:
+            file_bytes = get_file_bytes(item)
+            if file_bytes is None:
+                store_processing_status(task_id, 'error', f"ファイル {item['file_name']} が見つかりません")
+                return "File not found", 400
+            input_files_streams.append(BytesIO(file_bytes))
+        
+        # 出力ファイルパス（GCSに保存）
+        output_filename = f"processed/{task_id}_{parameters['download_name']}"
+        output_path = os.path.join(TMP_PATH, "combine.pdf")
+        
+        # PDF処理実行
+        change_to_booklet(
+            input_files=input_files_streams,
+            output_path=output_path,
+            center_gap_mm=20,
+            isNumbering=parameters['is_numbering'],
+            isBooklet=parameters['is_booklet'],
+            unnumbering_page=parameters['unnumbering_page'],
+            start_page=parameters['start_page']
+        )
+        
+        # 結果をGCSに保存
+        with open(output_path, 'rb') as f:
+            blob = bucket.blob(output_filename)
+            blob.upload_from_file(f, content_type='application/pdf')
+        
+        # 署名付きURLを生成（1時間有効）
+        signed_url = blob.generate_signed_url(
+            version="v4",
+            expiration=datetime.timedelta(hours=1),
+            method="GET"
+        )
+        
+        # 処理完了ステータスを保存
+        store_processing_status(task_id, 'completed', signed_url)
+        
+        print(f"Task {task_id}: PDF処理完了")
+        return "Task completed", 200
+        
+    except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
+        print(f"Task processing error: {e}")
+        print(f"Trace:\n{error_trace}")
+        
+        if 'task_id' in locals():
+            store_processing_status(task_id, 'error', str(e))
+        
+        return f"Task processing failed: {str(e)}", 500
+
+@app.route("/check-task-status/<task_id>")
+def check_task_status(task_id):
+    """タスクの処理状況を確認"""
+    try:
+        blob = bucket.blob(f'processing_status/{task_id}.json')
+        status_data = json.loads(blob.download_as_text())
+        return jsonify(status_data)
+    except Exception as e:
+        return jsonify({'status': 'not_found', 'error': str(e)}), 404
+
+def process_pdf_synchronously(files_info, parameters):
+    """ローカル環境用の同期PDF処理"""
+    # ファイルバイト取得
+    input_files_streams = []
+    for item in files_info:
+        file_bytes = get_file_bytes(item)
+        if file_bytes is None:
+            return f"ファイル {item['file_name']} が見つかりません", 400
+        input_files_streams.append(BytesIO(file_bytes))
+    
+    # 出力ファイルパス
+    output_path = os.path.join(TMP_PATH, "combine.pdf")
+    
+    # PDF処理実行
+    change_to_booklet(
+        input_files=input_files_streams,
+        output_path=output_path,
+        center_gap_mm=20,
+        isNumbering=parameters['is_numbering'],
+        isBooklet=parameters['is_booklet'],
+        unnumbering_page=parameters['unnumbering_page'],
+        start_page=parameters['start_page']
+    )
+    
+    return send_file(
+        output_path,
+        as_attachment=True,
+        mimetype="application/pdf",
+        download_name=parameters['download_name']
+    )
 
 @app.route("/preview/<filename>")
 def preview(filename):

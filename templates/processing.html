@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>処理中 - Libcararian</title>
+    <style>
+        .processing-container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 40px;
+            text-align: center;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 6px 25px rgba(0,0,0,0.08);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #ff8c00;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-message {
+            font-size: 1.2rem;
+            color: #495057;
+            margin: 20px 0;
+        }
+        
+        .progress-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 0.95rem;
+            color: #6c757d;
+        }
+        
+        .download-link {
+            display: none;
+            margin-top: 30px;
+        }
+        
+        .download-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .download-btn:hover {
+            background: linear-gradient(135deg, #218838, #1e7e6b);
+            transform: translateY(-2px);
+        }
+        
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Libcararian</h1>
+    
+    <div class="processing-container">
+        <div class="spinner" id="spinner"></div>
+        
+        <div class="status-message" id="status-message">
+            {{ message }}
+        </div>
+        
+        <div class="progress-info">
+            <p><strong>処理ID:</strong> {{ task_id }}</p>
+            <p>PDF結合処理をバックグラウンドで実行しています。</p>
+            <p>処理が完了すると、このページにダウンロードリンクが表示されます。</p>
+            <p><small>※ ページを閉じても処理は継続されます</small></p>
+        </div>
+        
+        <div class="download-link" id="download-section">
+            <p style="color: #28a745; font-weight: bold;">✓ 処理が完了しました！</p>
+            <a href="#" id="download-btn" class="download-btn">PDFをダウンロード</a>
+        </div>
+        
+        <div class="error-message" id="error-section">
+            <p><strong>エラーが発生しました:</strong></p>
+            <p id="error-details"></p>
+        </div>
+        
+        <div style="margin-top: 30px;">
+            <a href="/" style="color: #ff8c00; text-decoration: none;">← ホームに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        const taskId = '{{ task_id }}';
+        const statusMessage = document.getElementById('status-message');
+        const spinner = document.getElementById('spinner');
+        const downloadSection = document.getElementById('download-section');
+        const downloadBtn = document.getElementById('download-btn');
+        const errorSection = document.getElementById('error-section');
+        const errorDetails = document.getElementById('error-details');
+        
+        // 5秒ごとにステータスをチェック
+        const checkInterval = setInterval(() => {
+            fetch(`/check-task-status/${taskId}`)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Status:', data);
+                    
+                    if (data.status === 'completed') {
+                        // 処理完了
+                        clearInterval(checkInterval);
+                        spinner.style.display = 'none';
+                        statusMessage.textContent = '処理が完了しました！';
+                        downloadBtn.href = data.result_url;
+                        downloadSection.style.display = 'block';
+                        
+                    } else if (data.status === 'error') {
+                        // エラー発生
+                        clearInterval(checkInterval);
+                        spinner.style.display = 'none';
+                        statusMessage.textContent = '処理中にエラーが発生しました。';
+                        errorDetails.textContent = data.result_url || 'Unknown error';
+                        errorSection.style.display = 'block';
+                        
+                    } else if (data.status === 'processing') {
+                        // 処理中（継続）
+                        statusMessage.textContent = 'PDF結合処理を実行中です...';
+                    }
+                })
+                .catch(error => {
+                    console.error('Status check failed:', error);
+                    // エラーが続く場合は停止
+                    if (Date.now() - startTime > 300000) { // 5分でタイムアウト
+                        clearInterval(checkInterval);
+                        spinner.style.display = 'none';
+                        statusMessage.textContent = 'ステータス確認がタイムアウトしました。';
+                        errorDetails.textContent = 'ページを更新して再度お試しください。';
+                        errorSection.style.display = 'block';
+                    }
+                });
+        }, 5000);
+        
+        const startTime = Date.now();
+        
+        // 初回チェック（2秒後）
+        setTimeout(() => {
+            checkInterval;
+        }, 2000);
+    </script>
+</body>
+</html>
