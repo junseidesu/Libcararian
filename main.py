@@ -243,18 +243,7 @@ def combine():
     if "files_info" not in session or not session["files_info"]:
         return "No files to combine.", 400
 
-    # 各ファイルのバイトデータをメモリストリームとして取得
-    # booklet.pyがファイルパスではなくメモリオブジェクトを扱えるように対応
-    input_files_streams = []
-    for item in session["files_info"]:
-        file_bytes = get_file_bytes(item)
-        if file_bytes is None:
-            return f"ファイル {item['file_name']} が見つかりません", 400
-        input_files_streams.append(BytesIO(file_bytes))
-    
-    # 出力ファイルを一時的にローカル（GAE環境では/tmp）に保存
-    output_path = os.path.join(TMP_PATH, "combine.pdf")
-
+    # パラメータ取得
     unnumbering_page_str = request.args.get("no-number-pages")
     start_page_str = request.args.get("start-number")
     output_filename = request.args.get("output-filename")
@@ -272,26 +261,47 @@ def combine():
     else:
         download_name = "結合ファイル.pdf"
 
-    try:
-        change_to_booklet(
-            input_files=input_files_streams,
-            output_path=output_path,
-            center_gap_mm=20,
-            isNumbering=True if request.args.get("isNumbering") == "numbering" else False,
-            isBooklet=True if request.args.get("isBooklet") == "booklet" else False,
-            unnumbering_page=unnumbering_page,
-            start_page=start_page
-        )
+    if IS_GAE:
+        # GAE環境：Cloud Tasksで非同期処理
+        task_id = str(uuid.uuid4())
         
-        return send_file(
-            output_path,
-            as_attachment=True,
-            mimetype="application/pdf",
-            download_name=download_name
-        )
-    except Exception as e:
-        print(f"PDF processing error: {e}")
-        return f"PDF処理中にエラーが発生しました: {str(e)}", 500
+        task_data = {
+            'task_id': task_id,
+            'files_info': session["files_info"],
+            'parameters': {
+                'is_numbering': request.args.get("isNumbering") == "numbering",
+                'is_booklet': request.args.get("isBooklet") == "booklet",
+                'unnumbering_page': unnumbering_page,
+                'start_page': start_page,
+                'download_name': download_name
+            }
+        }
+        
+        # タスクを作成
+        task_name = create_pdf_task(task_data)
+        if task_name:
+            # 処理開始ステータスを保存
+            store_processing_status(task_id, 'processing')
+            # 処理中画面にリダイレクト
+            return redirect(url_for('processing_page', task_id=task_id))
+        else:
+            return "タスクの作成に失敗しました", 500
+    else:
+        # ローカル環境：同期処理
+        return process_pdf_synchronously(session["files_info"], {
+            'is_numbering': request.args.get("isNumbering") == "numbering",
+            'is_booklet': request.args.get("isBooklet") == "booklet",
+            'unnumbering_page': unnumbering_page,
+            'start_page': start_page,
+            'download_name': download_name
+        })
+
+@app.route("/processing/<task_id>")
+def processing_page(task_id):
+    """処理中画面を表示"""
+    return render_template("processing.html", 
+                         task_id=task_id, 
+                         message="PDF結合処理をバックグラウンドで実行しています...")
 
 @app.route("/process-pdf-task", methods=["POST"])
 def process_pdf_task():
