@@ -192,7 +192,12 @@ def combine():
 
     # 各ファイルのバイトデータをメモリストリームとして取得
     # booklet.pyがファイルパスではなくメモリオブジェクトを扱えるように対応
-    input_files_streams = [BytesIO(get_file_bytes(item)) for item in session["files_info"]]
+    input_files_streams = []
+    for item in session["files_info"]:
+        file_bytes = get_file_bytes(item)
+        if file_bytes is None:
+            return f"ファイル {item['file_name']} が見つかりません", 400
+        input_files_streams.append(BytesIO(file_bytes))
     
     # 出力ファイルを一時的にローカル（GAE環境では/tmp）に保存
     output_path = os.path.join(TMP_PATH, "combine.pdf")
@@ -201,8 +206,12 @@ def combine():
     start_page_str = request.args.get("start-number")
     output_filename = request.args.get("output-filename")
 
-    unnumbering_page = int(unnumbering_page_str) if unnumbering_page_str else 0
-    start_page = int(start_page_str) if start_page_str else 1
+    try:
+        unnumbering_page = int(unnumbering_page_str) if unnumbering_page_str and unnumbering_page_str.isdigit() else 0
+        start_page = int(start_page_str) if start_page_str and start_page_str.isdigit() else 1
+    except (ValueError, AttributeError):
+        unnumbering_page = 0
+        start_page = 1
     
     # ファイル名の処理（入力がない場合はデフォルト名を使用）
     if output_filename and output_filename.strip():
@@ -229,6 +238,7 @@ def combine():
         )
     except Exception as e:
         print(f"PDF processing error: {e}")
+        return f"PDF処理中にエラーが発生しました: {str(e)}", 500
 
 @app.route("/preview/<filename>")
 def preview(filename):
